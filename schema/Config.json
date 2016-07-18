@@ -1,0 +1,109 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "Config",
+    "type": "object",
+    "properties":
+    {
+        "connect":
+        {
+            "description": "Token and base uri required to connect to APIs",
+            "type": "object",
+            "properties":
+            {
+                "old":
+                {
+                    "type": "object",
+                    "properties":
+                    {
+                        "token":
+                        {
+                            "description": "OAuth 2.0 token for old API",
+                            "type": "string"
+                        },
+                        "base_uri":
+                        {
+                            "description": "Base uri for old API",
+                            "type": "string"
+                        }
+                    },
+                    "required":[
+                        "token",
+                        "base_uri"
+                    ]
+                },
+                "new":
+                {
+                    "type": "object",
+                    "properties":
+                    {
+                        "token":
+                        {
+                          "description": "OAuth 2.0 token for new API",
+                          "type": "string"
+                        },
+                        "base_uri":
+                        {
+                          "description": "Base uri for new API",
+                          "type": "string"
+                        }
+                    },
+                    "required":[
+                    "token",
+                    "base_uri"
+                    ]
+                }
+            },
+              "required": [
+                "old",
+                "new"
+              ]
+        },
+        "methods":
+        {
+            "type": "array",
+            "items":
+            {
+                "type": "object",
+                "properties":
+                {
+                    "endpoint":
+                    {
+                        "description": "Method uri",
+                        "type": "string"
+                    },
+                    "method":
+                    {
+                        "description": "Type of method",
+                        "type": "string",
+                        "enum": ["GET", "PUT", "POST", "PATCH", "DELETE"]
+                    },
+                    "params":
+                    {
+                        "description": "Parameters required for method",
+                        "type": "object"
+                    },
+                    "content_types":
+                    {
+                        "description": "Type of response",
+                        "type": "array"
+                    }
+                },
+                "required":[
+                  "endpoint",
+                  "method",
+                  "content_types"
+                ]
+            }
+        },
+        "display_all_results":
+        {
+            "description": "Display all results or only failures",
+            "type": "boolean"
+        }
+    },
+    "required":[
+        "connect",
+        "methods",
+        "display_all_results"
+    ]
+}
