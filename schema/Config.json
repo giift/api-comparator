@@ -79,8 +79,7 @@
                     },
                     "params":
                     {
-                        "description": "Parameters required for method",
-                        "type": "object"
+                        "description": "Parameters required for method"
                     },
                     "content_types":
                     {

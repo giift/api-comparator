@@ -1,26 +1,29 @@
 <?php
 require '../vendor/autoload.php';
 
-$parsed = new \Giift\Compare\Parser\Raml('/Users/KohChinWee/dev/api-anisha/report.raml');
+$parsed = new \Giift\Compare\Parser\Raml('/Users/KohChinWee/dev/api-anisha/user.raml');
 
 if($parsed->create_config())
 {
     $config = $parsed->get_config();
     $conf = new \Giift\Compare\Config($config);
 
+    // die(print_r($conf->get_config()));
+    // die('stop');
+
     $connect=array(
         'old' =>array(
-            'token' => 'Bearer pBOGOZMBnWeSJIqbUtSH77dFjoD1Kj9o4x9DAJu4',
-            'base_uri' => 'http://localhost/giift/public/api/report/v1'
+            'token' => 'Bearer 9jLdYudEoklkSPhh0YCM21hcJShj7UQXNdwYNNEp',
+            'base_uri' => 'http://localhost/giift/public/api/user/v1'
         ),
         'new' => array(
-            'token' => 'Bearer pBOGOZMBnWeSJIqbUtSH77dFjoD1Kj9o4x9DAJu4',
-            'base_uri' => 'http://localhost/giift/public/api/report/v1'
+            'token' => 'Bearer 9jLdYudEoklkSPhh0YCM21hcJShj7UQXNdwYNNEp',
+            'base_uri' => 'http://localhost/giift/public/api/user/v1'
         )
     );
 
     $conf->set_connect($connect);
-    $conf->set_display_opt(false);
+    $conf->set_display_opt(true);
 
     if($conf->validate())
     {
@@ -28,6 +31,7 @@ if($parsed->create_config())
 
         $compare = new \Giift\Compare\Compare($conf->get_config());
 
+        // $compare->set_index(1);
         if($compare->run(true))
         {
             // print_r('apis match');
@@ -38,6 +42,10 @@ if($parsed->create_config())
             $compare->to_file('result.xml', 'xml');
             $compare->to_file('result.csv', 'csv');
         }
+    }
+    else
+    {
+        print_r('schema not valid');
     }
 }
 else

@@ -70,7 +70,6 @@ class Raml
      * <pre>
      * $array = array(
      *     'method_uri'=>array(
-     *         'method_type'=>array(
      *             'field'
      *         )
      *     )
@@ -90,7 +89,7 @@ class Raml
      *
      * <pre>
      * $array = array(
-     *     'method_type'=>array(
+     *     'method_uri'=>array(
      *         'field'
      *     )
      * );
@@ -123,17 +122,18 @@ class Raml
             }
 
             $config['params'] = null;
+            $config['query_params'] = null;
 
-            // Get the method type, query parameters and content type for each method
+            // Get the method type, query parameters, body paramaters and content type for each method
             foreach($resource->getMethods() as $method)
             {
                 if(!empty($method->getQueryParameters()))
                 {
-                    $config['params'][] = $method->getQueryParameters();
-                    if(is_null($method->getQueryParameters()))
+                    foreach ($method->getQueryParameters() as $param)
                     {
-                        $this->missing_fields[$config['endpoint']][] = 'params';
+                        $config['query_params'][$param->getKey()] = $param->getExample();
                     }
+                    $config['query_params'] = http_build_query($config['query_params']);
                 }
 
                 $config['method'] = $method->getType();
@@ -147,58 +147,164 @@ class Raml
                 {
                     $this->missing_fields[$config['endpoint']][] = 'content_types';
                 }
-            }
 
-            // Set uri parameters
-            if(!empty($resource->getUriParameters()))
-            {
-                foreach($resource->getUriParameters() as $params)
+                // Get body parameters
+                if(!empty($method->getBodies()))
                 {
-                    // Add method for each enum
-                    if(!empty($params->getEnum()))
+                    foreach($method->getBodies() as $body)
                     {
-                        $enums = $params->getEnum();
-                        foreach ($enums as $key => $value)
+                        if($body->getMediaType() === 'application/json')
                         {
-                            $pos = strpos($config['endpoint'], '{');
-                            $endpoint = substr($config['endpoint'], 0, $pos).$value;
+                            $config['params'] = json_decode($body->getExample(), true);
+                            // json_decode adds 'id'=>filepath to the array
+                            unset($config['params']['id']);
+                            if(is_null($config['params']))
+                            {
+                                $this->missing_fields[$config['endpoint']] = 'params: example';
+                            }
 
-                            $this->config_object->add_method(
-                                $endpoint,
+                            $this->add_methods(
+                                $resource,
+                                $config['endpoint'],
                                 $config['method'],
                                 $config['content_types'],
-                                $config['params']
+                                $config['params'],
+                                $config['query_params']
+                            );
+                        }
+                        // application/x-www-form-urlencoded and multipart/form-data
+                        else
+                        {
+                            if(!empty($body->getParameters()))
+                            {
+                                foreach($body->getParameters() as $params)
+                                {
+                                    if(!empty($params->getEnum()))
+                                    {
+                                        $config['params'][$params->getKey()] = $params->getEnum()[0];
+                                    }
+                                    elseif(!is_null($params->getExample()))
+                                    {
+                                        $config['params'][$params->getKey()] = $params->getExample();
+                                    }
+                                    else
+                                    {
+                                        $this->missing_fields[$config['endpoint']] = 'params: enum/example';
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                $this->missing_fields[$config['endpoint']] = 'body params';
+                            }
+
+                            $this->add_methods(
+                                $resource,
+                                $config['endpoint'],
+                                $config['method'],
+                                $config['content_types'],
+                                $config['params'],
+                                $config['query_params']
                             );
                         }
                     }
-                    // Add method for example
-                    elseif(!is_null($params->getExample()))
-                    {
-                        $example = $params->getExample();
-                        $pos = strpos($config['endpoint'], '{');
-                        $config['endpoint'] = substr($config['endpoint'], 0, $pos).$example;
-
-                        $this->config_object->add_method(
-                            $config['endpoint'],
-                            $config['method'],
-                            $config['content_types'],
-                            $config['params']
-                        );
-                    }
                 }
-            }
-            else
-            {
-                $this->config_object->add_method(
-                    $config['endpoint'],
-                    $config['method'],
-                    $config['content_types'],
-                    $config['params']
-                );
+                else
+                {
+                    $this->add_methods(
+                        $resource,
+                        $config['endpoint'],
+                        $config['method'],
+                        $config['content_types'],
+                        $config['params'],
+                        $config['query_params']
+                    );
+                }
             }
         }
         $this->config = $this->config_object->get_config();
 
         return empty($this->missing_fields);
+    }
+
+    /**
+     * Add method for each uri parameter enum/example
+     * @param \Raml\Resource $resource
+     * @param string $endpoint
+     * @param string $method
+     * @param array $content_types
+     * @param array $config_params
+     * @param string $query_params
+     *
+     * $content_types = array(
+     *     'types'
+     * );
+     *
+     * $config_params = array(
+     *     'key'=>'value'
+     * );
+     *
+     */
+    protected function add_methods($resource, $endpoint, $method, $content_types, array $config_params=null, $query_params=null)
+    {
+        // Get uri parameters
+        if(!empty($resource->getUriParameters()))
+        {
+            foreach($resource->getUriParameters() as $params)
+            {
+                // Add method for each enum
+                if(!empty($params->getEnum()))
+                {
+                    foreach ($params->getEnum() as $key => $value)
+                    {
+                        // Set endpoint
+                        $pos = strpos($endpoint, '{');
+                        $new_endpoint = substr($endpoint, 0, $pos).$value;
+
+                        // Add query params
+                        if(!is_null($query_params))
+                        {
+                            $new_endpoint .= '?'.$query_params;
+                        }
+
+                        $this->config_object->add_method(
+                            $new_endpoint,
+                            $method,
+                            $content_types,
+                            $config_params
+                        );
+                    }
+                }
+                // Add method for example
+                elseif(!is_null($params->getExample()))
+                {
+                    // Set endpoint
+                    $pos = strpos($endpoint, '{');
+                    $endpoint = substr($endpoint, 0, $pos).$params->getExample();
+
+                    // Add query params
+                    if(!is_null($query_params))
+                    {
+                        $endpoint .= '?'.$query_params;
+                    }
+
+                    $this->config_object->add_method(
+                        $endpoint,
+                        $method,
+                        $content_types,
+                        $config_params
+                    );
+                }
+            }
+        }
+        else
+        {
+            $this->config_object->add_method(
+                $endpoint,
+                $method,
+                $content_types,
+                $config_params
+            );
+        }
     }
 }

@@ -192,7 +192,7 @@ class Parser
     public function parse($rawFileName)
     {
         $fileName = realpath($rawFileName);
-        
+
         if (!is_file($fileName)) {
             throw new FileNotFoundException($rawFileName);
         }
@@ -337,7 +337,7 @@ class Parser
      */
     private function getCachedFilePath($data) {
         $key = md5($data);
-        
+
         return array_key_exists($key, $this->cachedFilesPaths) ? $this->cachedFilesPaths[$key] : null;
     }
 

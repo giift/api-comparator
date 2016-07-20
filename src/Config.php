@@ -211,13 +211,16 @@ class Config
         $return = false;
 
         // Get json schema
-        try{
+        try
+        {
             if(!is_readable(__DIR__.'/../schema/Config.json'))
             {
                 throw new \Exception('File not readable');
             }
             $schema = file_get_contents(__DIR__.'/../schema/Config.json');
-        } catch(\Exception $e){
+        }
+        catch(\Exception $e)
+        {
             echo $e->getMessage();
         }
 
@@ -228,13 +231,16 @@ class Config
         $config = json_encode($this->get_config());
 
         // Validate config against schema
-        try {
+        try
+        {
             if(!$json_schema->validate($config))
             {
                 throw new \Exception();
             }
             $return = true;
-        } catch(\Exception $e){}
+        }
+        catch(\Exception $e)
+        {}
 
         return $return;
     }

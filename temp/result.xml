@@ -1,7 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<testsuites duration= "0">
-    <testsuite name="comparison test" failures= "0" tests= "5" skipped= "0" errors= "0">
+<testsuites duration= "2.8438100814819">
+    <testsuite name="comparison test" failures= "0" tests= "6" skipped= "0" errors= "0">
         
+        <testcase name="/user/item" time="0.18826508522034">
+            
+            
+        </testcase>
+
+        <testcase name="/user/portfolio_value" time="1.9456441402435">
+            
+            
+        </testcase>
+
+        <testcase name="/social/is_linked/facebook" time="0.21251106262207">
+            
+            
+        </testcase>
+
+        <testcase name="/social/is_linked/google" time="0.16559886932373">
+            
+            
+        </testcase>
+
+        <testcase name="/social/unlink/facebook" time="0.1639199256897">
+            
+            
+        </testcase>
+
+        <testcase name="/social/unlink/google" time="0.16787099838257">
+            
+            
+        </testcase>
+
     </testsuite>
 </testsuites>

@@ -330,13 +330,23 @@ class Compare
 
             if(array_key_exists('params', $method))
             {
-                $old_method->set_post_str(http_build_query($method['params']));
-                $new_method->set_post_str(http_build_query($method['params']));
+                if($method['method'] === 'POST')
+                {
+                    $old_method->set_post_str(http_build_query($method['params']));
+                    $new_method->set_post_str(http_build_query($method['params']));
+                }
+                else
+                {
+                    $old_method->set_post_str(http_build_query($method['params']), false);
+                    $new_method->set_post_str(http_build_query($method['params']), false);
+                }
             }
 
             // Execute the methods and compare results
             if($old_method->execute() and $new_method->execute())
             {
+                (print_r($old_method));
+
                 $result = array('name' => $method['endpoint']);
 
                 if(!$this->compare($old_method, $new_method, $method['endpoint']))
@@ -451,7 +461,8 @@ class Compare
     {
         $output = $this->format($format);
 
-        try {
+        try
+        {
             if(is_dir($output_file))
             {
                 throw new \Exception("Cannot write to a directory");
@@ -460,7 +471,9 @@ class Compare
             {
                 throw new \Exception("Could not write to file");
             }
-        } catch(\Exception $e) {
+        }
+        catch(\Exception $e)
+        {
             echo $e->getMessage();
         }
     }
