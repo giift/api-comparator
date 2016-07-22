@@ -1,5 +1,5 @@
 
-        <testcase name="<?=$this->e($name)?>" time="<?=$this->e($time)?>">
+        <testcase name= "<?=urldecode($this->e($name))?>" time="<?=$this->e($time)?>">
             <?php
             if($error)
             {

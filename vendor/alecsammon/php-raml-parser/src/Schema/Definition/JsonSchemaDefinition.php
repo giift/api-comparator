@@ -81,6 +81,7 @@ class JsonSchemaDefinition implements SchemaDefinitionInterface
         $validator->check($json, $jsonSchema);
 
         if (!$validator->isValid()) {
+            die(print_r($validator->getErrors()));
             throw new InvalidSchemaException($validator->getErrors());
         }
 

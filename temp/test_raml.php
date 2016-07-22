@@ -1,7 +1,7 @@
 <?php
 require '../vendor/autoload.php';
 
-$parsed = new \Giift\Compare\Parser\Raml('/Users/KohChinWee/dev/api-anisha/user.raml');
+$parsed = new \Giift\Compare\Parser\Raml('/Users/KohChinWee/dev/api-anisha/cart.raml');
 
 if($parsed->create_config())
 {
@@ -13,12 +13,12 @@ if($parsed->create_config())
 
     $connect=array(
         'old' =>array(
-            'token' => 'Bearer 9jLdYudEoklkSPhh0YCM21hcJShj7UQXNdwYNNEp',
-            'base_uri' => 'http://localhost/giift/public/api/user/v1'
+            'token' => 'Bearer QEAVQ5MbxFouWdPePVnFQgaxWrAmC5MOZUO2gpC9',
+            'base_uri' => 'http://localhost/giift/public/api/cart/v1'
         ),
         'new' => array(
-            'token' => 'Bearer 9jLdYudEoklkSPhh0YCM21hcJShj7UQXNdwYNNEp',
-            'base_uri' => 'http://localhost/giift/public/api/user/v1'
+            'token' => 'Bearer QEAVQ5MbxFouWdPePVnFQgaxWrAmC5MOZUO2gpC9',
+            'base_uri' => 'http://localhost/giift/public/api/cart/v1'
         )
     );
 

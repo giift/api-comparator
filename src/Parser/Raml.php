@@ -111,120 +111,276 @@ class Raml
     public function create_config()
     {
         $routes = $this->parsed->getResourcesAsUri()->getRoutes();
-        foreach($routes as $route)
+
+        foreach ($routes as $route)
         {
             $resource = $this->parsed->getResourceByPath($route['path']);
 
-            $config['endpoint'] = $resource->getUri();
-            if(is_null($config['endpoint']))
+            // Get the endpoint
+            $endpoint = $this->get_endpoint($resource);
+
+            // Set the methods
+            foreach ($resource->getMethods() as $method)
             {
-                $this->missing_fields[$config['endpoint']][] = 'endpoint';
-            }
-
-            $config['params'] = null;
-            $config['query_params'] = null;
-
-            // Get the method type, query parameters, body paramaters and content type for each method
-            foreach($resource->getMethods() as $method)
-            {
-                if(!empty($method->getQueryParameters()))
-                {
-                    foreach ($method->getQueryParameters() as $param)
-                    {
-                        $config['query_params'][$param->getKey()] = $param->getExample();
-                    }
-                    $config['query_params'] = http_build_query($config['query_params']);
-                }
-
-                $config['method'] = $method->getType();
-                if(is_null($config['method']))
-                {
-                    $this->missing_fields[$config['endpoint']][] = 'method';
-                }
-
-                $config['content_types'] = $method->getResponse(200)->getTypes();
-                if(is_null($config['content_types']))
-                {
-                    $this->missing_fields[$config['endpoint']][] = 'content_types';
-                }
-
-                // Get body parameters
-                if(!empty($method->getBodies()))
-                {
-                    foreach($method->getBodies() as $body)
-                    {
-                        if($body->getMediaType() === 'application/json')
-                        {
-                            $config['params'] = json_decode($body->getExample(), true);
-                            // json_decode adds 'id'=>filepath to the array
-                            unset($config['params']['id']);
-                            if(is_null($config['params']))
-                            {
-                                $this->missing_fields[$config['endpoint']] = 'params: example';
-                            }
-
-                            $this->add_methods(
-                                $resource,
-                                $config['endpoint'],
-                                $config['method'],
-                                $config['content_types'],
-                                $config['params'],
-                                $config['query_params']
-                            );
-                        }
-                        // application/x-www-form-urlencoded and multipart/form-data
-                        else
-                        {
-                            if(!empty($body->getParameters()))
-                            {
-                                foreach($body->getParameters() as $params)
-                                {
-                                    if(!empty($params->getEnum()))
-                                    {
-                                        $config['params'][$params->getKey()] = $params->getEnum()[0];
-                                    }
-                                    elseif(!is_null($params->getExample()))
-                                    {
-                                        $config['params'][$params->getKey()] = $params->getExample();
-                                    }
-                                    else
-                                    {
-                                        $this->missing_fields[$config['endpoint']] = 'params: enum/example';
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                $this->missing_fields[$config['endpoint']] = 'body params';
-                            }
-
-                            $this->add_methods(
-                                $resource,
-                                $config['endpoint'],
-                                $config['method'],
-                                $config['content_types'],
-                                $config['params'],
-                                $config['query_params']
-                            );
-                        }
-                    }
-                }
-                else
-                {
-                    $this->add_methods(
-                        $resource,
-                        $config['endpoint'],
-                        $config['method'],
-                        $config['content_types'],
-                        $config['params'],
-                        $config['query_params']
-                    );
-                }
+                $this->set_method($resource, $method, $endpoint);
             }
         }
+
+        // Get the config
         $this->config = $this->config_object->get_config();
 
         return empty($this->missing_fields);
+    }
+
+    /**
+     * Returns the endpoint
+     * @param \Raml\Resource $resource
+     * @return string
+     */
+    protected function get_endpoint(\Raml\Resource $resource)
+    {
+        $endpoint = $resource->getUri();
+        if(is_null($endpoint))
+        {
+            $this->missing_fields[][] = 'endpoint';
+        }
+
+        return $endpoint;
+    }
+
+    /**
+     * Set methods
+     * @param \Raml\Resource $resource
+     * @param \Raml\Method $method
+     * @param string $endpoint
+     */
+    protected function set_method(\Raml\Resource $resource, \Raml\Method $method, $endpoint)
+    {
+        $params = null;
+        $query_params = null;
+
+        // Get query params
+        if(!empty($method->getQueryParameters()))
+        {
+            $query_params = $this->get_query_params($method, $endpoint);
+        }
+
+        // Get method type
+        $method_type = $this->get_method_type($method, $endpoint);
+
+        // Get content type
+        $content_types = $this->get_content_types($method, $endpoint);
+
+        // Get body params
+        if(!empty($method->getBodies()))
+        {
+            $params = $this->get_body_params($method, $endpoint);
+        }
+
+        // Add method
+        $this->add_methods(
+            $resource,
+            $endpoint,
+            $method_type,
+            $content_types,
+            $params,
+            $query_params
+        );
+    }
+
+    /**
+     * Returns the query parameters
+     * @param \Raml\Method $method
+     * @param string $endpoint
+     * @return string
+     */
+    protected function get_query_params(\Raml\Method $method, $endpoint)
+    {
+        $query_params = array();
+        foreach ($method->getQueryParameters() as $param)
+        {
+            $query_params[$param->getKey()] = $param->getExample();
+            if(empty($query_params))
+            {
+                $this->missing_fields[$endpoint] = 'query params: '.$param->getKey();
+            }
+        }
+
+        return http_build_query($query_params);
+    }
+
+    /**
+     * Returns the method type
+     * @param \Raml\Method $method
+     * @param string $endpoint
+     * @return string
+     */
+    protected function get_method_type(\Raml\Method $method, $endpoint)
+    {
+        $method_type = $method->getType();
+        if(is_null($method_type))
+        {
+            $this->missing_fields[$endpoint][] = 'method';
+        }
+
+        return $method_type;
+    }
+
+    /**
+     * Returns the content type of the method
+     * @param \Raml\Method $method
+     * @param string $endpoint
+     * @return array
+     *
+     * <pre>
+     * $content_types = array(
+     *     'types'
+     * );
+     * </pre>
+     */
+    protected function get_content_types(\Raml\Method $method, $endpoint)
+    {
+        $content_types = $method->getResponse(200)->getTypes();
+        if(empty($content_types))
+        {
+            $this->missing_fields[$endpoint][] = 'content_types';
+        }
+
+        return $content_types;
+    }
+
+    /**
+     * Returns the body params
+     * @param \Raml\Method $method
+     * @param string $endpoint
+     * @return array
+     *
+     * <pre>
+     * $array = array(
+     *     'key'=>'value'
+     * );
+     * </pre>
+     */
+    protected function get_body_params(\Raml\Method $method, $endpoint)
+    {
+        $media_types = $this->get_media_types($method);
+
+        if(
+            in_array('application/x-www-form-urlencoded', $media_types)
+            or
+            in_array('multipart/form-data', $media_types)
+        )
+        {
+            return $this->get_form_params($method, $endpoint);
+        }
+        else
+        {
+            return array();
+        }
+    }
+
+    /**
+     * Get available media types for the body
+     * @param \Raml\Method $method
+     * @return array
+     *
+     * <pre>
+     * $media_types = array(
+     *     'media_types'
+     * );
+     * </pre>
+     */
+    protected function get_media_types(\Raml\Method $method)
+    {
+        $media_types = array();
+        foreach ($method->getBodies() as $body)
+        {
+            $media_types[] = $body->getMediaType();
+        }
+        return $media_types;
+    }
+
+    /**
+     * Returns form body params
+     * @param \Raml\Method $method
+     * @param string $endpoint
+     * @return array
+     *
+     * <pre>
+     * $body_params = array(
+     *     'key'=>'value'
+     * );
+     * </pre>
+     */
+    protected function get_form_params(\Raml\Method $method, $endpoint)
+    {
+        $body = null;
+        $body_params = null;
+
+        try
+        {
+            $body = $method->getBodyByType('application/x-www-form-urlencoded');
+        }
+        catch (\Exception $e)
+        {
+            try
+            {
+                $body = $method->getBodyByType('multipart/form-data');
+            }
+            catch (\Exception $e)
+            {
+                $body = null;
+            }
+        }
+
+        if (!is_null($body))
+        {
+            if(!empty($body->getParameters()))
+            {
+                $body_params = $this->get_params($body, $endpoint);
+            }
+            else
+            {
+                $this->missing_fields[$endpoint] = 'body params';
+            }
+        }
+
+        return $body_params;
+    }
+
+    /**
+     * Returns the form body parameters
+     * @param \Raml\WebFormBody $body
+     * @param string $endpoint
+     * @return array
+     *
+     * <pre>
+     * $body_params = array(
+     *     'key'=>'value'
+     * );
+     * </pre>
+     */
+    protected function get_params(\Raml\WebFormBody $body, $endpoint)
+    {
+        $body_params = array();
+        foreach($body->getParameters() as $params)
+        {
+            if(!empty($params->getEnum()))
+            {
+                $enums = $params->getEnum();
+                $body_params[$params->getKey()] = $enums[0];
+            }
+            elseif(!is_null($params->getExample()))
+            {
+                $body_params[$params->getKey()] = $params->getExample();
+            }
+            else
+            {
+                $this->missing_fields[$endpoint] = 'params: '.$params->getKey();
+            }
+        }
+
+        return $body_params;
     }
 
     /**
@@ -245,7 +401,14 @@ class Raml
      * );
      *
      */
-    protected function add_methods($resource, $endpoint, $method, $content_types, array $config_params=null, $query_params=null)
+    protected function add_methods(
+        \Raml\Resource $resource,
+        $endpoint,
+        $method,
+        array $content_types,
+        array $config_params = null,
+        $query_params = null
+    )
     {
         // Get uri parameters
         if(!empty($resource->getUriParameters()))
@@ -257,15 +420,7 @@ class Raml
                 {
                     foreach ($params->getEnum() as $key => $value)
                     {
-                        // Set endpoint
-                        $pos = strpos($endpoint, '{');
-                        $new_endpoint = substr($endpoint, 0, $pos).$value;
-
-                        // Add query params
-                        if(!is_null($query_params))
-                        {
-                            $new_endpoint .= '?'.$query_params;
-                        }
+                        $new_endpoint = $this->set_endpoint($endpoint, $value, $query_params);
 
                         $this->config_object->add_method(
                             $new_endpoint,
@@ -278,18 +433,10 @@ class Raml
                 // Add method for example
                 elseif(!is_null($params->getExample()))
                 {
-                    // Set endpoint
-                    $pos = strpos($endpoint, '{');
-                    $endpoint = substr($endpoint, 0, $pos).$params->getExample();
-
-                    // Add query params
-                    if(!is_null($query_params))
-                    {
-                        $endpoint .= '?'.$query_params;
-                    }
+                    $new_endpoint = $this->set_endpoint($endpoint, $params->getExample(), $query_params);
 
                     $this->config_object->add_method(
-                        $endpoint,
+                        $new_endpoint,
                         $method,
                         $content_types,
                         $config_params
@@ -306,5 +453,26 @@ class Raml
                 $config_params
             );
         }
+    }
+
+    /**
+     * Add the uri and query parameters to the endpoint
+     * @param string $endpoint
+     * @param string $uri_param
+     * @param string $query_params
+     */
+    protected function set_endpoint($endpoint, $uri_param, $query_params = null)
+    {
+        // Set endpoint
+        $pos = strpos($endpoint, '{');
+        $new_endpoint = substr($endpoint, 0, $pos).$uri_param;
+
+        // Add query params
+        if(!empty($query_params))
+        {
+            $new_endpoint .= '?'.$query_params;
+        }
+
+        return $new_endpoint;
     }
 }

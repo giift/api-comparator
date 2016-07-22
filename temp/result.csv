@@ -1,7 +1,2 @@
 "Method", "Path", "Old Value", "New Value"
-"/user/item"
-"/user/portfolio_value"
-"/social/is_linked/facebook"
-"/social/is_linked/google"
-"/social/unlink/facebook"
-"/social/unlink/google"
+"/buy/card"

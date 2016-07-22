@@ -231,16 +231,11 @@ class Config
         $config = json_encode($this->get_config());
 
         // Validate config against schema
-        try
+        if(!$json_schema->validate($config))
         {
-            if(!$json_schema->validate($config))
-            {
-                throw new \Exception();
-            }
-            $return = true;
+            throw new \Exception();
         }
-        catch(\Exception $e)
-        {}
+        $return = true;
 
         return $return;
     }

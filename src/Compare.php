@@ -345,7 +345,7 @@ class Compare
             // Execute the methods and compare results
             if($old_method->execute() and $new_method->execute())
             {
-                (print_r($old_method));
+                (print_r($old_method->_response));
 
                 $result = array('name' => $method['endpoint']);
 
@@ -554,7 +554,7 @@ class Compare
             if ($this->display_all or array_key_exists('differences', $result))
             {
                 $data = array(
-                    'name' => $result['name'],
+                    'name' => urlencode($result['name']),
                     'time' => $result['time'],
                     'fail' => false,
                     'error' => false
