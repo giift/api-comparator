@@ -53,7 +53,7 @@ class Compare
      * );
      * </pre>
      */
-    public function __construct($config)
+    public function __construct(array $config)
     {
         if(isset($config['connect']))
         {
@@ -196,7 +196,7 @@ class Compare
      * );
      * </pre>
      */
-    public function set_connect($connect)
+    public function set_connect(array $connect)
     {
         $this->connect = $connect;
     }
@@ -225,7 +225,7 @@ class Compare
      * );
      * </pre>
      */
-    public function set_methods($methods)
+    public function set_methods(array $methods)
     {
         $this->methods = $methods;
     }
@@ -345,8 +345,6 @@ class Compare
             // Execute the methods and compare results
             if($old_method->execute() and $new_method->execute())
             {
-                (print_r($old_method->_response));
-
                 $result = array('name' => $method['endpoint']);
 
                 if(!$this->compare($old_method, $new_method, $method['endpoint']))
@@ -495,6 +493,9 @@ class Compare
                 break;
             case 'xml':
                 $output = $this->to_junit();
+                break;
+            default:
+                $output = null;
                 break;
         }
 

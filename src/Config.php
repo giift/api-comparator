@@ -211,18 +211,11 @@ class Config
         $return = false;
 
         // Get json schema
-        try
+        if(!is_readable(__DIR__.'/../schema/Config.json'))
         {
-            if(!is_readable(__DIR__.'/../schema/Config.json'))
-            {
-                throw new \Exception('File not readable');
-            }
-            $schema = file_get_contents(__DIR__.'/../schema/Config.json');
+            throw new \Exception('File not readable');
         }
-        catch(\Exception $e)
-        {
-            echo $e->getMessage();
-        }
+        $schema = file_get_contents(__DIR__.'/../schema/Config.json');
 
         // Parse json schema
         $json = new \Raml\Schema\Parser\JsonSchemaParser;
