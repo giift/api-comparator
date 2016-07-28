@@ -1,5 +1,5 @@
 
-        <testcase name= "<?=urldecode($this->e($name))?>" time="<?=$this->e($time)?>">
+        <testcase name= "<?=urldecode($this->e($name))?>" time="<?=$this->e($time)?>" delta-time="<?=$this->e($delta_time)?>">
             <?php
             if($error)
             {

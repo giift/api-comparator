@@ -124,7 +124,7 @@ class Config
      * </pre>
      *
      */
-    public function set_connect($connect)
+    public function set_connect(array $connect)
     {
         $this->config['connect'] = $connect;
     }
@@ -163,7 +163,7 @@ class Config
      * </pre>
      *
      */
-    public function set_methods($methods)
+    public function set_methods(array $methods)
     {
         $this->config['methods'] = $methods;
     }
@@ -231,5 +231,24 @@ class Config
         $return = true;
 
         return $return;
+    }
+
+    /**
+     * Sets the config from a file
+     * @param string $filepath
+     * @return array
+     *
+     * @throws \Exception
+     *
+     */
+    public static function create_from_file($filepath)
+    {
+        if(!is_readable($filepath))
+        {
+            throw new Exception("File not readable");
+
+        }
+        $config = file_get_contents($filepath);
+        return json_decode($config, true);
     }
 }
