@@ -133,7 +133,7 @@ class Config
      * Set option to display all results or not
      * @param boolean $display_opt
      */
-    public function set_display_opt($display_opt)
+    public function set_display_opt($display_opt = true)
     {
         $this->config['display_all_results'] = $display_opt;
     }
@@ -240,6 +240,44 @@ class Config
      *
      * @throws \Exception
      *
+     * <pre>
+     * $array = array(
+     *     'connect'=>array(
+     *         'old'=>array(
+     *             // string Access token
+     *             'token'=>'',
+     *             // string Base uri
+     *             'base_uri'=>''
+     *         ),
+     *         'new'=>array(
+     *             // string Access token
+     *             'token'=>'',
+     *             // string Base uri
+     *             'base_uri'=>''
+     *         )
+     *     ),
+     *     'methods'=>array(
+     *         array(
+     *             // string Method uri
+     *             'endpoint'=>'',
+     *             // string Type of method
+     *             'method'=>'',
+     *             // array  Parameters required for method
+     *             'params'=>array(
+     *                 // string
+     *                 'key'=>'value'
+     *             ),
+     *             // array Types of response
+     *             'content_types'=>array(
+     *                 'types'
+     *             )
+     *         )
+     *     ),
+     *     // boolean Display all results (true) or only differences (false)
+     *     'display_all_results'=>''
+     * );
+     * </pre>
+     *
      */
     public static function create_from_file($filepath)
     {
@@ -249,6 +287,7 @@ class Config
 
         }
         $config = file_get_contents($filepath);
+
         return json_decode($config, true);
     }
 }

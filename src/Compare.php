@@ -344,13 +344,13 @@ class Compare
 
             // Time taken to execute each method
             $start_old = microtime(true);
-            $old_res = $old_method->execute();
+            $old_method->execute();
             $start_new = microtime(true);
-            $new_res = $new_method->execute();
+            $new_method->execute();
             $end_new = microtime(true);
 
             // Execute the methods and compare results
-            if($old_res and $new_res)
+            if($old_method and $new_method)
             {
                 $result = array(
                     'name'=>$method['endpoint'],
@@ -577,7 +577,7 @@ class Compare
         }
         $data = implode("\n", $line);
 
-        $csv = new \League\Plates\Engine('../templates');
+        $csv = new \League\Plates\Engine(__DIR__.'/../templates');
 
         return $csv->render('csv', array('differences' => $data));
     }
@@ -641,7 +641,7 @@ class Compare
                 }
 
                 // Create template for each testcase
-                $testcase = new \League\Plates\Engine('../templates/junit');
+                $testcase = new \League\Plates\Engine(__DIR__.'/../templates/junit');
                 $info['testcases'] .= $testcase->render('testcases', $data);
 
                 // Template for differences in headers
@@ -660,7 +660,7 @@ class Compare
         }
 
         // Display results in junit template
-        $tpl = new \League\Plates\Engine('../templates');
+        $tpl = new \League\Plates\Engine(__DIR__.'/../templates');
 
         return $tpl->render('junit', $info);
     }
