@@ -342,14 +342,32 @@ class Compare
                 }
             }
 
-            // Execute the methods and compare results
-            if($old_method->execute() and $new_method->execute())
-            {
-                $result = array('name' => $method['endpoint']);
+            // Time taken to execute each method
+            $start_old = microtime(true);
+            $old_method->execute();
+            $start_new = microtime(true);
+            $new_method->execute();
+            $end_new = microtime(true);
 
+            // Execute the methods and compare results
+            if($old_method and $new_method)
+            {
+                $result = array(
+                    'name'=>$method['endpoint'],
+                    'delta_time'=>($start_new - $start_old) - ($end_new - $start_new)
+                );
+
+                // Compare responses
                 if(!$this->compare($old_method, $new_method, $method['endpoint']))
                 {
                     $result['differences'] = $this->get_differences();
+                }
+
+                // Compare headers
+                $headers = $this->check_headers($old_method->_infos, $new_method->_infos);
+                if(!empty($headers))
+                {
+                    $result['headers'] = $headers;
                 }
             }
             else
@@ -373,11 +391,12 @@ class Compare
 
     /**
      * Compares the responses from both environments
-     * @param  \Simplecurl\Curl $old
-     * @param  \Simplecurl\Curl $new
+     * @param  \Giift\Simplecurl\Curl\Json $old
+     * @param  \Giift\Simplecurl\Curl\Json $new
+     * @param  string $method
      * @return  boolean
      */
-    public function compare($old, $new, $method)
+    public function compare(\Giift\Simplecurl\Curl\Json $old, \Giift\Simplecurl\Curl\Json $new, $method)
     {
         if($this->check_md5($old->_raw, $new->_raw))
         {
@@ -402,12 +421,13 @@ class Compare
     }
 
     /**
-     * Recursively compares results from both environments
+     * Recursively compares responses from both environments
      * @param  array $old
      * @param  array $new
+     * @param  array $path
      * @return  boolean
      */
-    protected function check_json($old, $new, $path = array())
+    protected function check_json(array $old, array $new, $path = array())
     {
         foreach($old as $key => $value)
         {
@@ -440,13 +460,44 @@ class Compare
      * @param  string $new
      * @param  array $path
      */
-    protected function log_diff($old, $new, $path)
+    protected function log_diff($old, $new, array $path)
     {
         $this->differences[implode('.', $path)] = array(
             'old' => $old,
             'new' => $new
         );
     }
+
+    /**
+     * Compares the response code and content type of both environments
+     * @param  array $old
+     * @param  array $new
+     * @return boolean
+     */
+    protected function check_headers(array $old, array $new)
+    {
+        $headers = array();
+
+        // Compare response code
+        if($old['http_code'] !== $new['http_code'])
+        {
+            $headers['response_code']= array(
+                'old'=>$old['http_code'],
+                'new'=>$new['http_code']
+            );
+        }
+        // Compare content type of response
+        if($old['content_type'] !== $new['content_type'])
+        {
+            $headers['content_type'] = array(
+                'old'=>$old['content_type'],
+                'new'=>$new['content_type']
+            );
+        }
+
+        return $headers;
+    }
+
 
     /**
      * Puts output in specified file
@@ -526,7 +577,7 @@ class Compare
         }
         $data = implode("\n", $line);
 
-        $csv = new \League\Plates\Engine('../templates');
+        $csv = new \League\Plates\Engine(__DIR__.'/../templates');
 
         return $csv->render('csv', array('differences' => $data));
     }
@@ -552,11 +603,20 @@ class Compare
         // Create testcase template
         foreach($results as $result)
         {
-            if ($this->display_all or array_key_exists('differences', $result))
+            if(
+                $this->display_all
+                or
+                array_key_exists('differences', $result)
+                or
+                array_key_exists('headers', $result)
+                or
+                array_key_exists('errors', $result)
+            )
             {
                 $data = array(
                     'name' => urlencode($result['name']),
                     'time' => $result['time'],
+                    'delta_time' => $result['delta_time'],
                     'fail' => false,
                     'error' => false
                 );
@@ -580,13 +640,27 @@ class Compare
                     $info['failures']++;
                 }
 
-                $testcase = new \League\Plates\Engine('../templates/junit');
+                // Create template for each testcase
+                $testcase = new \League\Plates\Engine(__DIR__.'/../templates/junit');
                 $info['testcases'] .= $testcase->render('testcases', $data);
+
+                // Template for differences in headers
+                if(array_key_exists('headers', $result))
+                {
+                    $header_test = new \League\Plates\Engine('../templates/junit');
+                    $info['testcases'] .= $header_test->render(
+                        'headers',
+                        array(
+                            'name'=>urlencode($result['name']),
+                            'headers'=>json_encode($result['headers'], JSON_PRETTY_PRINT)
+                        )
+                    );
+                }
             }
         }
 
         // Display results in junit template
-        $tpl = new \League\Plates\Engine('../templates');
+        $tpl = new \League\Plates\Engine(__DIR__.'/../templates');
 
         return $tpl->render('junit', $info);
     }
