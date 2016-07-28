@@ -1,8 +1,24 @@
 # API Comparator
-Compares different versions of the same API by executing each method and comapring the response.
-## Creating the config
-The config is reqiured to compare the API versions. It consists of:
-```
+This library can be used to compare different versions of an API, so as to ensure backward compatibility.
+The user will have to provide the config consisting of the authentication token, base uris of the APIs, the method endpoint, method type, the parameters, the content types, and the display option. The config can be either manually written or generated from a raml file.
+The APIs are then compared using the information provided in the config. Each method of the two APIs is executed and their reponses and headers are compared.
+The results will show the differences in the responses or headers of the APIs.
+
+## Quick start
+A basic overview of how to use this library:
+
+1. Create the config manually or from a raml file.
+2. Validate the config.
+3. Pass the config to the Compare class and start the comparision.
+4. Results can be displayed in a file or fetched manually.
+
+This can also be done by using [command line interface](#user-content-using-command-line-interface).
+
+## Create the config
+### Write the config
+The user can pass the config as an array or put the config in a file and parse it:
+```PHP
+// User will have to write all the different fields and their values
 $config = array(
     'connect'=>array(
         'old'=>array(
@@ -38,28 +54,34 @@ $config = array(
     // boolean Display all results (true) or only differences (false)
     'display_all_results'=>''
 );
+
+// Parse config from a file
+$config = \Giift\Compare\Config::('config/file/path');
 ```
+A json schema of the config can be found [here]().
 
-There are three different ways to create the config:
-
-1. Write the config and pass it as a paramter to the Compare constructor
-2. Write the config in a file and use the ```create_from_file($filepath)``` method in Config
-3. Provide a RAML file documentation of the API and automatically generate the config using Raml
+### Generate from RAML
+<!--
+Provide a RAML file documentation of the API and automatically generate the config using Raml
     1. The 'connect' and 'display_all_results' fields will have to be added separately
-    2. The RAML to PHP parser is a third party library. More information can be found [here](https://github.com/alecsammon/php-raml-parser).
+    2. The RAML to PHP parser is a third party library. More information can be found [here](https://github.com/alecsammon/php-raml-parser). -->
 
 ## Validate the config
-Validate the config before comparing to ensure all necessary fields are provided.
+Validate the config before comparing to ensure that all the necessary fields are provided.
 ```PHP
 $config_object = new \Giift\Compare\Config($config);
 $config_object->validate();
 ```
-## Comparing the APIs
-Pass the config to the Compare class:
+If the config doesn't validate agaisnt the schema, it will throw an exception stating the missing fields.
+
+## Compare the APIs
+The Compare class first does a strict check on the responses and if that fails, then it does a deep check by recursively comparing the response arrays.
+To initiate this comparison, pass the config to the Compare class:
 
 ```PHP
 $compare = new \Giift\Compare\Compare($config);
 ```
+This class also has methods to
 
 To start the comparison, you can choose to start from the first method or provide an index.
 ```PHP
@@ -71,7 +93,7 @@ $compare->set_index(3);
 $compare->run(false);
 ```
 ## Results
-To just get the results:
+To get the results:
 ```PHP
 $compare->get_results();
 ```

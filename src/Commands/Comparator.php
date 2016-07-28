@@ -72,7 +72,8 @@ class Comparator extends \D2G\Reactor\Command
                         )
                     ),
                     'flags'=>array(
-                        'reset'
+                        'reset',
+                        'raml'
                     )
                 )
             )
@@ -117,7 +118,15 @@ class Comparator extends \D2G\Reactor\Command
     public function compare()
     {
         // Get config from file
-        $config = \Giift\Compare\Config::create_from_file($this->getArg(0));
+        if($this->getFlag('raml'))
+        {
+            $parsed = new \Giift\Compare\Parser\Raml($this->getArg(0));
+            $config = $parsed->create_config();
+        }
+        else
+        {
+            $config = \Giift\Compare\Config::create_from_file($this->getArg(0));
+        }
 
         // Check if token, uri and display options are set
         if($this->getOpt('token'))
@@ -149,6 +158,7 @@ class Comparator extends \D2G\Reactor\Command
         $compare = new \Giift\Compare\Compare($config);
 
         //Check for reset
+        $reset = true;
         if($this->getFlag('reset'))
         {
             $reset = $this->getFlag('reset');
