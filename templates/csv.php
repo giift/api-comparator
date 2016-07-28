@@ -1,2 +1,2 @@
-"Method", "Path", "Old Value", "New Value"
+"Method", "Path", "Old Value", "New Value", "Delta Time"
 <?php echo $differences; ?>

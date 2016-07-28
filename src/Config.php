@@ -124,7 +124,7 @@ class Config
      * </pre>
      *
      */
-    public function set_connect($connect)
+    public function set_connect(array $connect)
     {
         $this->config['connect'] = $connect;
     }
@@ -133,7 +133,7 @@ class Config
      * Set option to display all results or not
      * @param boolean $display_opt
      */
-    public function set_display_opt($display_opt)
+    public function set_display_opt($display_opt = true)
     {
         $this->config['display_all_results'] = $display_opt;
     }
@@ -163,7 +163,7 @@ class Config
      * </pre>
      *
      */
-    public function set_methods($methods)
+    public function set_methods(array $methods)
     {
         $this->config['methods'] = $methods;
     }
@@ -231,5 +231,63 @@ class Config
         $return = true;
 
         return $return;
+    }
+
+    /**
+     * Sets the config from a file
+     * @param string $filepath
+     * @return array
+     *
+     * @throws \Exception
+     *
+     * <pre>
+     * $array = array(
+     *     'connect'=>array(
+     *         'old'=>array(
+     *             // string Access token
+     *             'token'=>'',
+     *             // string Base uri
+     *             'base_uri'=>''
+     *         ),
+     *         'new'=>array(
+     *             // string Access token
+     *             'token'=>'',
+     *             // string Base uri
+     *             'base_uri'=>''
+     *         )
+     *     ),
+     *     'methods'=>array(
+     *         array(
+     *             // string Method uri
+     *             'endpoint'=>'',
+     *             // string Type of method
+     *             'method'=>'',
+     *             // array  Parameters required for method
+     *             'params'=>array(
+     *                 // string
+     *                 'key'=>'value'
+     *             ),
+     *             // array Types of response
+     *             'content_types'=>array(
+     *                 'types'
+     *             )
+     *         )
+     *     ),
+     *     // boolean Display all results (true) or only differences (false)
+     *     'display_all_results'=>''
+     * );
+     * </pre>
+     *
+     */
+    public static function create_from_file($filepath)
+    {
+        if(!is_readable($filepath))
+        {
+            throw new Exception("File not readable");
+
+        }
+        $config = file_get_contents($filepath);
+
+        return json_decode($config, true);
     }
 }
