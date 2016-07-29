@@ -70,8 +70,7 @@ class Raml
      * <pre>
      * $array = array(
      *     'method_uri'=>array(
-     *             'field'
-     *         )
+     *         'field'
      *     )
      * );
      * </pre>
@@ -202,7 +201,7 @@ class Raml
             $query_params[$param->getKey()] = $param->getExample();
             if(empty($query_params))
             {
-                $this->missing_fields[$endpoint] = 'query params: '.$param->getKey();
+                $this->missing_fields[$endpoint][] = 'query params: '.$param->getKey();
             }
         }
 
@@ -341,7 +340,7 @@ class Raml
             }
             else
             {
-                $this->missing_fields[$endpoint] = 'body params';
+                $this->missing_fields[$endpoint][] = 'body params';
             }
         }
 
@@ -376,7 +375,7 @@ class Raml
             }
             else
             {
-                $this->missing_fields[$endpoint] = 'params: '.$params->getKey();
+                $this->missing_fields[$endpoint][] = 'params: '.$params->getKey();
             }
         }
 

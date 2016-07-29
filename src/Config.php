@@ -234,7 +234,7 @@ class Config
     }
 
     /**
-     * Sets the config from a file
+     * Sets the config from a json file
      * @param string $filepath
      * @return array
      *

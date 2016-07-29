@@ -6,7 +6,7 @@ class Compare
 {
     protected $connect = array();
     protected $methods = array();
-    protected $display_all = null;
+    protected $display_opt = null;
     protected $index = 0;
     protected $differences = array();
     protected $results = array();
@@ -65,7 +65,7 @@ class Compare
         }
         if(isset($config['display_all_results']))
         {
-            $this->set_display_all($config['display_all_results']);
+            $this->set_display_opt($config['display_all_results']);
         }
     }
 
@@ -132,9 +132,9 @@ class Compare
      * Returns display option
      * @return string
      */
-    public function get_display_all()
+    public function get_display_opt()
     {
-        return $this->display_all;
+        return $this->display_opt;
     }
 
     /**
@@ -166,7 +166,49 @@ class Compare
 
     /**
      * Returns the results
-     * @return string
+     * @return array
+     *
+     * <pre>
+     * $array = array(
+     *     array(
+     *         // string Method endpoint
+     *         'name'=>'',
+     *         // string New execution time - old execution time
+     *         'delta_time'=>'',
+     *         'differences'=>array(
+     *             'method.key.key'=>array(
+     *                 // string Old value
+     *                 'old'=>'',
+     *                 // string New value
+     *                 'new'=>''
+     *             )
+     *         ),
+     *         'headers'=>array(
+     *             'response_code'=>array(
+     *                 // string Old response code
+     *                 'old'=>'',
+     *                 // string New response code
+     *                 'new'=>''
+     *             ),
+     *             'content_type'=>array(
+     *                 // string Content type
+     *                 'old'=>'',
+     *                 // string Content type
+     *                 'new'=>''
+     *             )
+     *         ),
+     *         'errors'=>array(
+     *             // string Error
+     *             'old'=>'',
+     *             // string Error
+     *             'new'=>''
+     *         ),
+     *         // string Total comparison time
+     *         'time'=>''
+     *     )
+     * );
+     *
+     * </pre>
      */
     public function get_results()
     {
@@ -232,11 +274,11 @@ class Compare
 
     /**
      * Set display option
-     * @param boolean $display_all
+     * @param boolean $display_opt
      */
-    public function set_display_all($display_all)
+    public function set_display_opt($display_opt)
     {
-        $this->display_all = $display_all;
+        $this->display_opt = $display_opt;
     }
 
     /**
@@ -354,7 +396,7 @@ class Compare
             {
                 $result = array(
                     'name'=>$method['endpoint'],
-                    'delta_time'=>($start_new - $start_old) - ($end_new - $start_new)
+                    'delta_time'=>($end_new - $start_new) - ($start_new - $start_old)
                 );
 
                 // Compare responses
@@ -462,7 +504,7 @@ class Compare
      */
     protected function log_diff($old, $new, array $path)
     {
-        $this->differences[implode('.', $path)] = array(
+        $this->differences[implode('/', $path)] = array(
             'old' => $old,
             'new' => $new
         );
@@ -563,7 +605,7 @@ class Compare
 
         foreach($this->get_results() as $result)
         {
-            if($this->display_all)
+            if($this->display_opt)
             {
                 $line[] = '"'.$result['name'].'"';
             }
@@ -604,7 +646,7 @@ class Compare
         foreach($results as $result)
         {
             if(
-                $this->display_all
+                $this->display_opt
                 or
                 array_key_exists('differences', $result)
                 or

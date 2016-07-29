@@ -65,7 +65,7 @@ class Comparator extends \D2G\Reactor\Command
                             'required'=>false,
                             'default'=>null
                         ),
-                        'display-all'=>array(
+                        'display-opt'=>array(
                             'type'=>'string',
                             'required'=>false,
                             'default'=>null
@@ -142,7 +142,7 @@ class Comparator extends \D2G\Reactor\Command
         {
             $config['connect']['new']['base_uri'] = $this->getOpt('new-uri');
         }
-        if($this->getOpt('display-all'))
+        if($this->getOpt('display-opt'))
         {
             $config['display_all_results'] = true;
         }

@@ -1,22 +1,27 @@
 # API Comparator
-This library can be used to compare different versions of an API, so as to ensure backward compatibility.
-The user will have to provide the config consisting of the authentication token, base uris of the APIs, the method endpoint, method type, the parameters, the content types, and the display option. The config can be either manually written or generated from a raml file.
-The APIs are then compared using the information provided in the config. Each method of the two APIs is executed and their reponses and headers are compared.
-The results will show the differences in the responses or headers of the APIs.
+This library is used to compare different versions of an API to ensure backward compatibility.
+
+The user will have to provide a configuration that describes the API.
+Using this configuration, each method of the API is executed and it's responses and headers are compared. Any differences will be logged.
 
 ## Quick start
 A basic overview of how to use this library:
 
-1. Create the config manually or from a raml file.
-2. Validate the config.
-3. Pass the config to the Compare class and start the comparision.
-4. Results can be displayed in a file or fetched manually.
+1. Create the configuration from scratch, programatically, or a raml file.
+2. Validate the configuration. This not required, but recommended.
+3. Use this configuration with the Compare class.
+4. Results can be logged to a file or accessed programatically.
 
-This can also be done by using [command line interface](#user-content-using-command-line-interface).
+This can also be done by using [command line interface](#user-content-command-line-interface).
 
-## Create the config
-### Write the config
-The user can pass the config as an array or put the config in a file and parse it:
+## Create the configuration
+The configuration consists of the authentication tokens, API uris, display option and method description (endpoint, type, parameters, and content types).
+
+There are different ways to create the configuration:
+
+### Write the configuration
+* The user can pass the configuration as an array:
+
 ```PHP
 // User will have to write all the different fields and their values
 $config = array(
@@ -24,13 +29,13 @@ $config = array(
         'old'=>array(
             // string Access token
             'token'=>'',
-            // string Base uri
+            // string API uri
             'base_uri'=>''
         ),
         'new'=>array(
             // string Access token
             'token'=>'',
-            // string Base uri
+            // string API uri
             'base_uri'=>''
         )
     ),
@@ -54,53 +59,239 @@ $config = array(
     // boolean Display all results (true) or only differences (false)
     'display_all_results'=>''
 );
-
-// Parse config from a file
-$config = \Giift\Compare\Config::('config/file/path');
 ```
-A json schema of the config can be found [here]().
+* Parse the configuration from a json file:
+
+```PHP
+$config = \Giift\Compare\Config::('path/to/config/file');
+```
+A json schema of the configuration can be found [here]().
 
 ### Generate from RAML
-<!--
-Provide a RAML file documentation of the API and automatically generate the config using Raml
-    1. The 'connect' and 'display_all_results' fields will have to be added separately
-    2. The RAML to PHP parser is a third party library. More information can be found [here](https://github.com/alecsammon/php-raml-parser). -->
+The [RAML](http://raml.org/) file contains documentation of the API, which includes the different methods, their parameters, and response description.
 
-## Validate the config
+To create the configuration from a RAML file:
+
+```PHP
+// Pass the file path to get the configuration
+$parser = new \Giift\Compare\Parser\Raml('path/to/raml/file');
+// Create the configuration
+$parser->create_config();
+```
+While parsing the file, if any values of the fields are missing, the ```create_config()``` method will return false. To get these missing fields:
+
+```PHP
+$missing = $parser->get_missing_fields();
+// Example
+Array
+(
+    [method1/endpoint] => Array
+    (
+        // Missing fields
+        [0] => 'method_type'
+        [1] => 'query params: param'
+    )
+    [method2/endpoint] => Array
+    (
+        // Missing field
+        [0] => 'content_types'
+    )
+)
+
+// Get missing fields for a specific method
+$method_missing = $parser->get_missing_field($my_method_uri);
+// Example
+Array
+(
+    [my_method_uri] => Array
+    (
+        // Missing fields
+        [0] => 'body params: param'
+        [1] => 'query params: param'
+    )
+)
+```
+To get the parsed configuration:
+
+```PHP
+$config = $parser->get_config();
+```
+This configuration only consists of the 'methods' field. The 'connect' and 'display_all_results' fields will have to be added separately.
+This can be done by using the Config or Compare class.
+
+## Validate the configuration
 Validate the config before comparing to ensure that all the necessary fields are provided.
 ```PHP
 $config_object = new \Giift\Compare\Config($config);
 $config_object->validate();
 ```
-If the config doesn't validate agaisnt the schema, it will throw an exception stating the missing fields.
+If the configuration doesn't validate agaisnt the schema, it will throw an exception stating the missing fields.
 
-## Compare the APIs
-The Compare class first does a strict check on the responses and if that fails, then it does a deep check by recursively comparing the response arrays.
-To initiate this comparison, pass the config to the Compare class:
+## Compare the API versions
+The Compare class will do a strict check on the responses and if that fails, it will do a deep check by recursively comparing the response arrays.
+
+To initiate the comparison:
 
 ```PHP
+// After the config has been generated/validated, get the config as shown.
+// $config = $parser->get_config();
+
+// Pass the config
 $compare = new \Giift\Compare\Compare($config);
+// Default value for reset is true so it will compare all methods
+$compare->run();
 ```
-This class also has methods to
+This class also has functions to modify the configuration.
+* To add tokens, API uris and display option:
 
-To start the comparison, you can choose to start from the first method or provide an index.
 ```PHP
-// Reset is true so it will compare all methods
-$compare->run(true);
+// Set the 'connect' field
+$connect = array(
+    'old'=>array(
+        'token'=>'access token',
+        'base_uri'=>'uri for old version'
+    ),
+    'new'=>array(
+        'token'=>'access token',
+        'base_uri'=>'uri for new version'
+    )
+);
+$compare->set_connect($connect);
 
+// Display only differences (false) or all results (true)
+$compare->set_display_opt(true);
+```
+* To add methods:
+
+```PHP
+// Add all methods
+$methods = array(
+    array(
+        'endpoint'=>'/method1/endpoint',
+        'method'=>'POST',
+        'params'=>array(
+            'key'=>'value'
+        ),
+        'content_types'=>array(
+            'multipart/form-data'
+        )
+    ),
+    array(
+        'endpoint'=>'/method2/endpoint',
+        'method'=>'PATCH',
+        'params'=>array(
+            'key'=>'value'
+        ),
+        'content_types'=>array(
+            'application/x-www-form-urlencoded'
+        )
+    )
+);
+$compare->set_methods($methods);
+
+// Add one method.
+$compare->add_method('method/endpoint', 'GET', array(application/json));
+```
+You can choose to start the comparison from the first method or provide an index.
+
+```PHP
 // Set index so that it will run from the 4th method
 $compare->set_index(3);
 $compare->run(false);
 ```
+
 ## Results
 To get the results:
+
 ```PHP
-$compare->get_results();
+$results = $compare->get_results();
+// Example
+Array
+(
+    [0] => Array
+    (
+        [name] => 'method endpoint'
+        // new execution time - old execution time
+        [delta_time] => 'time difference'
+        [differences] => Array
+        (
+            [method/key/key] => Array
+            (
+                [old] => 'old value'
+                [new] => 'new value'
+            )
+
+        )
+        [headers] => Array
+        (
+            [response_code] => Array
+            (
+                [old] => 'code'
+                [new] => 'code'
+            )
+            // Content type of the response
+            [content_type] => Array
+            (
+                [old] => 'type'
+                [new] => 'type'
+            )
+
+        )
+        // Errors in executing the methods
+        [errors] => Array
+        (
+            [old] => 'error'
+            [new] => 'error'
+        )
+        // Time taken to execute and compare the methods
+        [time] => 'time'
+    )
+)
 ```
-The results can also be put in xml, csv or json files. The 'display_all_results' option can be set to show only the differences or all the tests.
+
+The results can also be put in xml (junit format), csv or json files.
+
 ```PHP
 $compare->to_file('results.xml', 'xml');
 ```
-## Using Command Line Interface
-This can be used to generate the config and compare the APIs without having to write your own test script.
-The cli tool has been provided by a third party. More information on it can be found [here](https://github.com/DimitriGilbert/Reactor).
+## Command Line Interface
+This cli tool was created to generate the configuration and compare the API versions from the console instead of writing a test script.
+
+Basic usage:
+
+```PHP
+:raml_to_config
+    <file_path:string>
+    [--output:string]
+:compare
+    <config:string>
+    [--output:string]
+    [--format:string]
+    [--token:string]
+    [--old-uri:string]
+    [--new-uri:string]
+    [--display-opt:string]
+    [-raml]
+    [-reset]
+```
+
+To create the configuration from a RAML file and store it:
+
+```
+[php] vendor/bin/reactor /Giift/Compare/Commands/Comparator:raml_to_config path/to/raml/file --output=config.json
+```
+The user can either update the configuration file or set the token, API uris, and display option while comparing the APIs:
+
+```
+[php] vendor/bin/reactor /Giift/Compare//Comparator:compare path/to/config/file
+```
+There is also an option to send the raml file directly to the compare method:
+
+```
+[php] vendor/bin/reactor /Giift/Compare//Comparator:compare path/to/raml/file --token=access token --old-uri=old base uri --new-uri=new base uri --display-opt=true -raml
+```
+To get help on the two functions and their arguments, options, and flags:
+
+```
+[php] vendor/bin/reactor /Giift/Compare//Comparator
+```
