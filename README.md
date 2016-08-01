@@ -2,20 +2,20 @@
 This library is used to compare different versions of an API to ensure backward compatibility.
 
 The user will have to provide a configuration that describes the API.
-Using this configuration, each method of the API is executed and it's responses and headers are compared. Any differences will be logged.
+Using this configuration, each method of the API is executed and its responses and headers are compared. Any differences will be logged.
 
 ## Quick start
 A basic overview of how to use this library:
 
-1. Create the configuration either from scratch, programatically, or a raml file.
+1. Create the configuration either from scratch, programmatically, or from a raml file.
 2. Validate the configuration (optional).
 3. Use this configuration with the Compare class.
-4. Results can be logged to a file or accessed programatically.
+4. Results can be logged to a file or accessed programmatically.
 
 This can also be done by using [command line interface](#user-content-command-line-interface).
 
 ## Create the configuration
-The configuration consists of the authentication tokens, API uris, display option and method description (endpoint, method type, parameters, and content types).
+The configuration consists of the authentication tokens, API uris, display option and method description (endpoint, HTTP method, parameters, and content types).
 
 There are different ways to create the configuration:
 
@@ -63,6 +63,7 @@ $config = array(
 * Parse the configuration from a json file:
 
 ```PHP
+// Returns the configuration as an array
 $config = \Giift\Compare\Config::('path/to/config/file');
 ```
 A json schema of the configuration can be found [here]().
@@ -81,47 +82,51 @@ $parser->create_config();
 While parsing the file, if any values of the fields are missing, the ```create_config()``` method will return false. To get these missing fields:
 
 ```PHP
-$missing = $parser->get_missing_fields();
-// Example
-Array
-(
-    [method1/endpoint] => Array
-    (
-        // Missing fields
-        [0] => 'method_type'
-        [1] => 'query params: param'
-    )
-    [method2/endpoint] => Array
-    (
-        // Missing field
-        [0] => 'content_types'
-    )
-)
-
 // Get missing fields for a specific method
 $method_missing = $parser->get_missing_field($my_method_uri);
 // Example
-Array
-(
-    [my_method_uri] => Array
-    (
-        // Missing fields
-        [0] => 'body params: param'
-        [1] => 'query params: param'
-    )
-)
+// Array
+// (
+//     [my_method_uri] => Array
+//     (
+           // Missing fields
+//         [0] => 'body params: param'
+//         [1] => 'query params: param'
+//     )
+// )
+
+// Get all missing fields
+$missing = $parser->get_missing_fields();
+// Example
+// Array
+// (
+//     [method1/endpoint] => Array
+//     (
+           // Missing fields
+//         [0] => 'method_type'
+//         [1] => 'query params: param'
+//     )
+//     [method2/endpoint] => Array
+//     (
+           // Missing field
+//         [0] => 'content_types'
+//     )
+// )
 ```
 To get the parsed configuration:
 
 ```PHP
+// Returns the configuration as an array
 $config = $parser->get_config();
 ```
 This configuration only consists of the 'methods' field. The 'connect' and 'display_all_results' fields will have to be added separately.
 This can be done by using the Config or Compare class.
 
 ## Validate the configuration
-Validate the config before comparing to ensure that all the necessary fields are provided.
+Validate the configuration before comparing to ensure that all the necessary fields are provided.
+
 ```PHP
+// The configuration is passed as an array
 $config_object = new \Giift\Compare\Config($config);
 $config_object->validate();
 ```
@@ -134,9 +139,12 @@ To initiate the comparison:
 
 ```PHP
 // After the config has been generated/validated, get the config as shown.
+// From a raml file:
 // $config = $parser->get_config();
+// From a json file:
+// $config = \Giift\Compare\Config::('path/to/config/file');
 
-// Pass the config
+// Pass the config array
 $compare = new \Giift\Compare\Compare($config);
 // Default parameter for run is true so it will compare all methods
 $compare->run();
@@ -164,6 +172,9 @@ $compare->set_display_opt(true);
 * To add methods:
 
 ```PHP
+// Add one method.
+$compare->add_method('method/endpoint', 'GET', array(application/json));
+
 // Add all methods
 $methods = array(
     array(
@@ -188,9 +199,6 @@ $methods = array(
     )
 );
 $compare->set_methods($methods);
-
-// Add one method.
-$compare->add_method('method/endpoint', 'GET', array(application/json));
 ```
 You can choose to start the comparison from the first method or provide an index.
 
@@ -206,67 +214,80 @@ To get the results:
 ```PHP
 $results = $compare->get_results();
 // Example
-Array
-(
-    [0] => Array
-    (
-        [name] => 'method endpoint'
-        // new execution time - old execution time
-        [delta_time] => 'time difference'
-        [differences] => Array
-        (
-            // Path to the values
-            [method/key/key] => Array
-            (
-                // Values of old and new API versions
-                [old] => 'old value'
-                [new] => 'new value'
-            )
-
-        )
-        // Shows any differences in headers
-        [headers] => Array
-        (
-            [response_code] => Array
-            (
-                // Response code of old and new versions
-                [old] => 'code'
-                [new] => 'code'
-            )
-            // Content type of the response
-            [content_type] => Array
-            (
-                [old] => 'type'
-                [new] => 'type'
-            )
-
-        )
-        // Errors in executing the methods
-        [errors] => Array
-        (
-            [old] => 'error'
-            [new] => 'error'
-        )
-        // Time taken to execute and compare the methods
-        [time] => 'time'
-    )
-)
+// Array
+// (
+//     [0] => Array
+//     (
+//         [name] => 'method endpoint'
+           // new execution time - old execution time
+//         [delta_time] => 'time difference'
+//         [differences] => Array
+//         (
+               // Path to the values
+//             [method/key/key] => Array
+//             (
+                   // Values of old and new API versions
+//                 [old] => 'old value'
+//                 [new] => 'new value'
+//             )
+//
+//         )
+           // Shows any differences in headers
+//         [headers] => Array
+//         (
+//             [response_code] => Array
+//             (
+                   // Response code of old and new versions
+//                 [old] => 'code'
+//                 [new] => 'code'
+//             )
+               // Content type of the response
+//             [content_type] => Array
+//             (
+//                 [old] => 'type'
+//                 [new] => 'type'
+//             )
+//
+//         )
+           // Errors in executing the methods
+//         [errors] => Array
+//         (
+//             [old] => 'error'
+//             [new] => 'error'
+//         )
+           // Time taken to execute and compare the methods
+//         [time] => 'time'
+//     )
+// )
 ```
 
 The results can also be put in xml (junit format), csv or json files.
 
 ```PHP
-$compare->to_file('results.xml', 'xml');
+$compare->to_file('path/to/results.xml', 'xml');
 ```
 ## Command Line Interface
 This cli tool was created to generate the configuration and compare the API versions from the console instead of writing a test script.
 
-It consists of two functions with various arguments, options, and flags:
+It consists of two functions which allow the user to generate the configuration from a RAML file, update the configuration, and compare the API versions.
+
+### Get configuration from RAML
+This method takes in the raml file path as its argument and has an option to put the configuration in a file:
 
 ```PHP
 :raml_to_config
     <file_path:string>
     [--output:string]
+```
+To create the configuration from a RAML file and store it:
+
+```
+[php] vendor/bin/reactor /Giift/Compare/Commands/Comparator:raml_to_config path/to/raml/file --output=config.json
+```
+### Compare API versions
+This method allows the user to pass the configuration or raml file as its argument, and also provides options to set the missing fields and log the results in a file:
+
+```PHP
 :compare
     <config:string>
     [--output:string]
@@ -279,17 +300,12 @@ It consists of two functions with various arguments, options, and flags:
     [-reset]
 ```
 
-To create the configuration from a RAML file and store it:
-
-```
-[php] vendor/bin/reactor /Giift/Compare/Commands/Comparator:raml_to_config path/to/raml/file --output=config.json
-```
 The user can either update the configuration file or set the token, API uris, and display option while comparing the APIs:
 
 ```
 [php] vendor/bin/reactor /Giift/Compare//Comparator:compare path/to/config/file
 ```
-There is also an option to send the raml file directly to the compare method:
+To send the raml file directly to the compare method:
 
 ```
 [php] vendor/bin/reactor /Giift/Compare//Comparator:compare path/to/raml/file --token=access token --old-uri=old base uri --new-uri=new base uri --display-opt=true -raml

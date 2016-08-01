@@ -49,7 +49,7 @@ class Config
      * </pre>
      *
      */
-    public function __construct($config = array())
+    public function __construct(array $config = array())
     {
         $this->config = $config;
     }
