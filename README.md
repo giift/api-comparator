@@ -7,20 +7,20 @@ Using this configuration, each method of the API is executed and it's responses 
 ## Quick start
 A basic overview of how to use this library:
 
-1. Create the configuration from scratch, programatically, or a raml file.
-2. Validate the configuration. This not required, but recommended.
+1. Create the configuration either from scratch, programatically, or a raml file.
+2. Validate the configuration (optional).
 3. Use this configuration with the Compare class.
 4. Results can be logged to a file or accessed programatically.
 
 This can also be done by using [command line interface](#user-content-command-line-interface).
 
 ## Create the configuration
-The configuration consists of the authentication tokens, API uris, display option and method description (endpoint, type, parameters, and content types).
+The configuration consists of the authentication tokens, API uris, display option and method description (endpoint, method type, parameters, and content types).
 
 There are different ways to create the configuration:
 
 ### Write the configuration
-* The user can pass the configuration as an array:
+* Pass the configuration as an array:
 
 ```PHP
 // User will have to write all the different fields and their values
@@ -73,7 +73,7 @@ The [RAML](http://raml.org/) file contains documentation of the API, which inclu
 To create the configuration from a RAML file:
 
 ```PHP
-// Pass the file path to get the configuration
+// Pass the raml file path
 $parser = new \Giift\Compare\Parser\Raml('path/to/raml/file');
 // Create the configuration
 $parser->create_config();
@@ -128,7 +128,7 @@ $config_object->validate();
 If the configuration doesn't validate agaisnt the schema, it will throw an exception stating the missing fields.
 
 ## Compare the API versions
-The Compare class will do a strict check on the responses and if that fails, it will do a deep check by recursively comparing the response arrays.
+The Compare class will do a strict check on the responses and if that fails, it will do a deep check by comparing each part of the response.
 
 To initiate the comparison:
 
@@ -138,7 +138,7 @@ To initiate the comparison:
 
 // Pass the config
 $compare = new \Giift\Compare\Compare($config);
-// Default value for reset is true so it will compare all methods
+// Default parameter for run is true so it will compare all methods
 $compare->run();
 ```
 This class also has functions to modify the configuration.
@@ -215,17 +215,21 @@ Array
         [delta_time] => 'time difference'
         [differences] => Array
         (
+            // Path to the values
             [method/key/key] => Array
             (
+                // Values of old and new API versions
                 [old] => 'old value'
                 [new] => 'new value'
             )
 
         )
+        // Shows any differences in headers
         [headers] => Array
         (
             [response_code] => Array
             (
+                // Response code of old and new versions
                 [old] => 'code'
                 [new] => 'code'
             )
@@ -257,7 +261,7 @@ $compare->to_file('results.xml', 'xml');
 ## Command Line Interface
 This cli tool was created to generate the configuration and compare the API versions from the console instead of writing a test script.
 
-Basic usage:
+It consists of two functions with various arguments, options, and flags:
 
 ```PHP
 :raml_to_config
@@ -289,9 +293,4 @@ There is also an option to send the raml file directly to the compare method:
 
 ```
 [php] vendor/bin/reactor /Giift/Compare//Comparator:compare path/to/raml/file --token=access token --old-uri=old base uri --new-uri=new base uri --display-opt=true -raml
-```
-To get help on the two functions and their arguments, options, and flags:
-
-```
-[php] vendor/bin/reactor /Giift/Compare//Comparator
 ```

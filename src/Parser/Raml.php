@@ -332,16 +332,9 @@ class Raml
             }
         }
 
-        if (!is_null($body))
+        if(!is_null($body) and !empty($body->getParameters()))
         {
-            if(!empty($body->getParameters()))
-            {
-                $body_params = $this->get_params($body, $endpoint);
-            }
-            else
-            {
-                $this->missing_fields[$endpoint][] = 'body params';
-            }
+            $body_params = $this->get_params($body, $endpoint);
         }
 
         return $body_params;
@@ -375,7 +368,7 @@ class Raml
             }
             else
             {
-                $this->missing_fields[$endpoint][] = 'params: '.$params->getKey();
+                $this->missing_fields[$endpoint][] = 'body params: '.$params->getKey();
             }
         }
 
@@ -445,6 +438,11 @@ class Raml
         }
         else
         {
+            if(!is_null($query_params))
+            {
+                $endpoint = $endpoint.'?'.$query_params;
+            }
+
             $this->config_object->add_method(
                 $endpoint,
                 $method,
@@ -467,7 +465,7 @@ class Raml
         $new_endpoint = substr($endpoint, 0, $pos).$uri_param;
 
         // Add query params
-        if(!empty($query_params))
+        if(!is_null($query_params))
         {
             $new_endpoint .= '?'.$query_params;
         }
