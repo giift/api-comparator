@@ -49,8 +49,36 @@ class Config
      * </pre>
      *
      */
-    public function __construct(array $config = array())
+    public function __construct(array $config = null)
     {
+        if(is_null($config))
+        {
+            $config = array(
+                'connect'=>array(
+                    'old'=>array(
+                        'token'=>'',
+                        'base_uri'=>''
+                    ),
+                    'new'=>array(
+                        'token'=>'',
+                        'base_uri'=>''
+                    )
+                ),
+                'methods'=>array(
+                    array(
+                        'endpoint'=>'',
+                        'method'=>'',
+                        'params'=>array(
+                            'key'=>'value'
+                        ),
+                        'content_types'=>array(
+                            'types'
+                        )
+                    )
+                ),
+                'display_all_results'=>''
+            );
+        }
         $this->config = $config;
     }
 
@@ -104,29 +132,28 @@ class Config
 
     /**
      * Set the token and base uris for both APIs
-     * @param array $connect
-     *
-     * <pre>
-     * $connect = array(
-     *     'old'=>array(
-     *         // string Access token
-     *         'token'=>'',
-     *         // string Base uri
-     *         'base_uri'=>''
-     *     ),
-     *     'new'=>array(
-     *         // string Access token
-     *         'token'=>'',
-     *         // string Base uri
-     *         'base_uri'=>''
-     *     )
-     * );
-     * </pre>
-     *
+     * @param string $old_token
+     * @param string $old_uri
+     * @param string $new_token
+     * @param string $new_uri
      */
-    public function set_connect(array $connect)
+    public function set_connect($old_token, $old_uri, $new_token = null, $new_uri)
     {
-        $this->config['connect'] = $connect;
+        if(is_null($new_token))
+        {
+            $new_token = $old_token;
+        }
+
+        $this->config['connect'] = array(
+            'old'=>array(
+                'token'=>$old_token,
+                'base_uri'=>$old_uri
+            ),
+            'new'=>array(
+                'token'=>$new_token,
+                'base_uri'=>$new_uri
+            )
+        );
     }
 
     /**
@@ -235,7 +262,7 @@ class Config
 
     /**
      * Sets the config from a json file
-     * @param string $filepath
+     * @param  string $filepath
      * @return array
      *
      * @throws \Exception

@@ -83,7 +83,7 @@ class Raml
 
     /**
      * Returns missing fields in a method
-     * @param string $method_uri
+     * @param  string $method_uri
      * @return array
      *
      * <pre>
@@ -133,7 +133,7 @@ class Raml
 
     /**
      * Returns the endpoint
-     * @param \Raml\Resource $resource
+     * @param  \Raml\Resource $resource
      * @return string
      */
     protected function get_endpoint(\Raml\Resource $resource)
@@ -189,8 +189,8 @@ class Raml
 
     /**
      * Returns the query parameters
-     * @param \Raml\Method $method
-     * @param string $endpoint
+     * @param  \Raml\Method $method
+     * @param  string $endpoint
      * @return string
      */
     protected function get_query_params(\Raml\Method $method, $endpoint)
@@ -210,8 +210,8 @@ class Raml
 
     /**
      * Returns the method type
-     * @param \Raml\Method $method
-     * @param string $endpoint
+     * @param  \Raml\Method $method
+     * @param  string $endpoint
      * @return string
      */
     protected function get_method_type(\Raml\Method $method, $endpoint)
@@ -227,8 +227,8 @@ class Raml
 
     /**
      * Returns the content type of the method
-     * @param \Raml\Method $method
-     * @param string $endpoint
+     * @param  \Raml\Method $method
+     * @param  string $endpoint
      * @return array
      *
      * <pre>
@@ -250,8 +250,8 @@ class Raml
 
     /**
      * Returns the body params
-     * @param \Raml\Method $method
-     * @param string $endpoint
+     * @param  \Raml\Method $method
+     * @param  string $endpoint
      * @return array
      *
      * <pre>
@@ -280,7 +280,7 @@ class Raml
 
     /**
      * Get available media types for the body
-     * @param \Raml\Method $method
+     * @param  \Raml\Method $method
      * @return array
      *
      * <pre>
@@ -301,8 +301,8 @@ class Raml
 
     /**
      * Returns form body params
-     * @param \Raml\Method $method
-     * @param string $endpoint
+     * @param  \Raml\Method $method
+     * @param  string $endpoint
      * @return array
      *
      * <pre>
@@ -342,8 +342,8 @@ class Raml
 
     /**
      * Returns the form body parameters
-     * @param \Raml\WebFormBody $body
-     * @param string $endpoint
+     * @param  \Raml\WebFormBody $body
+     * @param  string $endpoint
      * @return array
      *
      * <pre>

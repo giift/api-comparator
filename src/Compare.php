@@ -57,7 +57,23 @@ class Compare
     {
         if(isset($config['connect']))
         {
-            $this->set_connect($config['connect']);
+            if(
+                isset($config['connect']['old']['token'])
+                and
+                isset($config['connect']['old']['base_uri'])
+                and
+                isset($config['connect']['new']['token'])
+                and
+                isset($config['connect']['new']['base_uri'])
+            )
+            {
+                $this->set_connect(
+                    $config['connect']['old']['token'],
+                    $config['connect']['old']['base_uri'],
+                    $config['connect']['new']['token'],
+                    $config['connect']['new']['base_uri']
+                );
+            }
         }
         if(isset($config['methods']))
         {
@@ -216,31 +232,29 @@ class Compare
     }
 
     /**
-     * Sets the base uri and token for both environments
-     * @param array $connect
-     *
-     * <pre>
-     * $connect = array(
-     *     'connect'=>array(
-     *         'old'=>array(
-     *             // string Access token
-     *             'token'=>'',
-     *             // string Base uri
-     *             'base_uri'=>''
-     *         ),
-     *         'new'=>array(
-     *             // string Access token
-     *             'token'=>'',
-     *             // string Base uri
-     *             'base_uri'=>''
-     *         )
-     *     )
-     * );
-     * </pre>
+     * Sets the base uris and tokens for both environments
+     * @param string $old_token
+     * @param string $old_uri
+     * @param string $new_token
+     * @param string $new_uri
      */
-    public function set_connect(array $connect)
+    public function set_connect($old_token, $old_uri, $new_token = null, $new_uri)
     {
-        $this->connect = $connect;
+        if(is_null($new_token))
+        {
+            $new_token = $old_token;
+        }
+
+        $this->connect = array(
+            'old'=>array(
+                'token'=>$old_token,
+                'base_uri'=>$old_uri
+            ),
+            'new'=>array(
+                'token'=>$new_token,
+                'base_uri'=>$new_uri
+            )
+        );
     }
 
     /**
@@ -350,6 +364,7 @@ class Compare
         }
 
         $config = $this->get_connect();
+
         $methods = array_slice($this->get_methods(), $this->get_index());
 
         // Loop through methods and execute for both environments
@@ -433,24 +448,35 @@ class Compare
 
     /**
      * Compares the responses from both environments
-     * @param  \Giift\Simplecurl\Curl\Json $old
-     * @param  \Giift\Simplecurl\Curl\Json $new
-     * @param  string $method
+     * @param   \Giift\Simplecurl\Curl $old
+     * @param   \Giift\Simplecurl\Curl $new
+     * @param   string $method
      * @return  boolean
      */
-    public function compare(\Giift\Simplecurl\Curl\Json $old, \Giift\Simplecurl\Curl\Json $new, $method)
+    public function compare(\Giift\Simplecurl\Curl $old, \Giift\Simplecurl\Curl $new, $method)
     {
         if($this->check_md5($old->_raw, $new->_raw))
         {
             return true;
         }
-        return ($this->check_json($old->_response, $new->_response, array($method)));
+        elseif($old_xml->_infos['content_type'] === 'application/xml')
+        {
+            $old_xml = new SimpleXMLElement($old);
+            $new_xml = new SimpleXMLElement($new);
+
+            // TODO: figure out how to send method endpoint. since path is being used to get the element in new_xml
+            return ($this->check_xml($old_xml, $new_xml, array()));
+        }
+        elseif($old_xml->_infos['content_type'] === 'application/json')
+        {
+            return ($this->check_json($old->_response, $new->_response, array($method)));
+        }
     }
 
     /**
      * Uses md5 to compare results of both environments
-     * @param  string $old
-     * @param  string $new
+     * @param   string $old
+     * @param   string $new
      * @return  boolean
      */
     protected function check_md5($old, $new)
@@ -463,10 +489,46 @@ class Compare
     }
 
     /**
-     * Recursively compares responses from both environments
-     * @param  array $old
-     * @param  array $new
+     * Recursively compares xml responses from both environments
+     * @param  SimpleXMLElement $old
+     * @param  SimpleXMLElement $new
      * @param  array $path
+     * @return boolean
+     */
+    protected function check_xml(SimpleXMLElement $old, SimpleXMLElement $new, $path = array())
+    {
+        // TODO: Check for attributes???
+
+        foreach($old_xml->children() as $key=>$value)
+        {
+            $path[] = $key;
+
+            if(is_null($value) and !is_null($new_xml->xpath(implode('/', $path))))
+            {
+                $this->log_diff($value, null, $path);
+            }
+            elseif($value->count() >= 1 and $new_xml->count() == 0)
+            {
+                $this->log_diff($value, $new_xml->xpath(implode('/', $path)), $path);
+            }
+            elseif($value->count() >= 1 and $new_xml->count() >= 1)
+            {
+                $this->check_xml($value, $new_xml->xpath(implode('/', $path)), $path);
+            }
+            elseif($value !== $new_xml->xpath(implode('/', $path)))
+            {
+                $this->log_diff($value, $new_xml->xpath(implode('/', $path)), $path);
+            }
+        }
+
+        return empty($this->differences);
+    }
+
+    /**
+     * Recursively compares json responses from both environments
+     * @param   array $old
+     * @param   array $new
+     * @param   array $path
      * @return  boolean
      */
     protected function check_json(array $old, array $new, $path = array())
@@ -571,7 +633,7 @@ class Compare
 
     /**
      * Formats the output
-     * @param  string $format
+     * @param   string $format
      * @return  string
      */
     public function format($format = 'json')
