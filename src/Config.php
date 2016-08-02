@@ -66,7 +66,7 @@ class Config
                 ),
                 'methods'=>array(
                     array(
-                        'endpoint'=>'',
+                        'endpoint'=>null,
                         'method'=>'',
                         'params'=>array(
                             'key'=>'value'
@@ -224,7 +224,16 @@ class Config
             $new_method['params'] = $params;
         }
 
-        $this->config['methods'][] = $new_method;
+        if(is_null($this->config['methods'][0]['endpoint']))
+        {
+            // Overwrite the sample method set in constructor
+            $this->config['methods'] = array($new_method);
+        }
+        else
+        {
+            // Add to existing methods
+            $this->config['methods'][] = $new_method;
+        }
     }
 
     /**

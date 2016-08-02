@@ -455,22 +455,29 @@ class Compare
      */
     public function compare(\Giift\Simplecurl\Curl $old, \Giift\Simplecurl\Curl $new, $method)
     {
-        if($this->check_md5($old->_raw, $new->_raw))
-        {
-            return true;
-        }
-        elseif($old_xml->_infos['content_type'] === 'application/xml')
-        {
-            $old_xml = new SimpleXMLElement($old);
-            $new_xml = new SimpleXMLElement($new);
+        // if($this->check_md5($old->_raw, $new->_raw))
+        // {
+        //     return true;
+        // }
+        // elseif($old->_infos['content_type'] === 'application/xml')
+        // {
+        //     $old_xml = new SimpleXMLElement($old);
+        //     $new_xml = new SimpleXMLElement($new);
 
-            // TODO: figure out how to send method endpoint. since path is being used to get the element in new_xml
-            return ($this->check_xml($old_xml, $new_xml, array()));
-        }
-        elseif($old_xml->_infos['content_type'] === 'application/json')
-        {
-            return ($this->check_json($old->_response, $new->_response, array($method)));
-        }
+        //     // TODO: figure out how to send method endpoint. since path is being used to get the element in new_xml
+        //     return ($this->check_xml($old_xml, $new_xml, array($method)));
+        // }
+        // elseif($old->_infos['content_type'] === 'application/json')
+        // {
+        //     return ($this->check_json($old->_response, $new->_response, array($method)));
+        // }
+        $old = file_get_contents('../temp/result_old.xml');
+        $old_xml = new \SimpleXMLElement($old);
+
+        $new = file_get_contents('../temp/result_new.xml');
+        $new_xml = new \SimpleXMLElement($new);
+
+        return ($this->check_xml($old_xml, $new_xml, array($method)));
     }
 
     /**
@@ -490,38 +497,63 @@ class Compare
 
     /**
      * Recursively compares xml responses from both environments
-     * @param  SimpleXMLElement $old
-     * @param  SimpleXMLElement $new
+     * @param  \SimpleXMLElement $old
+     * @param  \SimpleXMLElement $new
      * @param  array $path
      * @return boolean
      */
-    protected function check_xml(SimpleXMLElement $old, SimpleXMLElement $new, $path = array())
+    protected function check_xml(\SimpleXMLElement $old, \SimpleXMLElement $new, array $path = array())
     {
-        // TODO: Check for attributes???
+        // if($this->check_md5($old->asXML(), $new->asXML()))
+        // {
+        //     return true;
+        // }
 
-        foreach($old_xml->children() as $key=>$value)
-        {
-            $path[] = $key;
+        $old_json = json_encode($old);
+        $new_json = json_encode($new);
 
-            if(is_null($value) and !is_null($new_xml->xpath(implode('/', $path))))
-            {
-                $this->log_diff($value, null, $path);
-            }
-            elseif($value->count() >= 1 and $new_xml->count() == 0)
-            {
-                $this->log_diff($value, $new_xml->xpath(implode('/', $path)), $path);
-            }
-            elseif($value->count() >= 1 and $new_xml->count() >= 1)
-            {
-                $this->check_xml($value, $new_xml->xpath(implode('/', $path)), $path);
-            }
-            elseif($value !== $new_xml->xpath(implode('/', $path)))
-            {
-                $this->log_diff($value, $new_xml->xpath(implode('/', $path)), $path);
-            }
-        }
+        return $this->check_json(
+            json_decode($old_json, true),
+            json_decode($new_json, true),
+            $path
+        );
 
-        return empty($this->differences);
+
+        // foreach($old->children() as $key=>$value)
+        // {
+        //     $path[] = $key;
+
+
+        //     // Check attributes
+        //     foreach($old->children()->attributes() as $k => $v)
+        //     {
+        //         if($v !== $new[$k])
+        //         {
+        //             // $path[] = $k;
+        //             $this->log_diff($v, $new[$k], $path);
+        //         }
+        //     }
+
+        //     // Compares the children
+        //     if(is_null($value) and !is_null($new->xpath(implode('/', $path))))
+        //     {
+        //         $this->log_diff($value, null, $path);
+        //     }
+        //     elseif($value->count() >= 1 and $new->count() == 0)
+        //     {
+        //         $this->log_diff($value, $new->xpath(implode('/', $path)), $path);
+        //     }
+        //     elseif($value->count() >= 1 and $new->count() >= 1)
+        //     {
+        //         $this->check_xml($value, $new->xpath(implode('/', $path)), $path);
+        //     }
+        //     elseif($value !== $new->xpath(implode('/', $path)))
+        //     {
+        //         $this->log_diff($value, $new->xpath(implode('/', $path)), $path);
+        //     }
+        // }
+
+        // return empty($this->differences);
     }
 
     /**
@@ -531,7 +563,7 @@ class Compare
      * @param   array $path
      * @return  boolean
      */
-    protected function check_json(array $old, array $new, $path = array())
+    protected function check_json(array $old, array $new, array $path = array())
     {
         foreach($old as $key => $value)
         {
@@ -675,7 +707,7 @@ class Compare
             {
                 foreach ($result['differences'] as $key => $value)
                 {
-                    $line[] = '"'.$result['name'].'","'.$key.'","'.$value['old'].'","'.$value['new'].'"';
+                    $line[] = '"'.$result['name'].'","'.$key.'","'.json_encode($value['old']).'","'.json_encode($value['new']).'","'.$result['delta_time'].'"';
                 }
             }
         }
