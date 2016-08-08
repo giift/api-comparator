@@ -1,11 +1,11 @@
 {
     "connect": {
         "old": {
-            "token": "Bearer SKsfdGSdsfa8sdJDE<MNLKd734",
+            "token": "Bearer SKsfdGSdsfa8sdJDEMNLKd734",
             "base_uri": "http://www.tshirt.com/api/"
         },
         "new": {
-            "token": "Bearer SKsfdGSdsfa8sdJDE<MNLKd734",
+            "token": "Bearer SKsfdGSdsfa8sdJDEMNLKd734",
             "base_uri": "http://www.tshirt.com/api/1.0.development/"
         }
     },

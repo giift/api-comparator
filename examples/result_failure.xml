@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<testsuites duration= "0">
+    <testsuite name="comparison test" failures= "1" tests= "4" skipped= "2" errors= "0">
+        <testcase name= "/method/endpoint/1" time="0.45951390266418" delta-time="-0.1479709148407">
+
+
+        </testcase>
+
+        <testcase name= "/method/endpoint/2" time="0.21722984313965" delta-time="0.00098919868469238">
+
+
+        </testcase>
+
+        <testcase name= "/method/endpoint/3" time="0.27286791801453" delta-time="0.0028278827667236">
+
+
+            <failure message="test failed">
+{
+    "/method/endpoint/3/key1/key2/0/1/2/3/header": {
+        "old": null,
+        "new": "Column"
+    }
+}
+            </failure>
+
+
+        </testcase>
+
+        <testcase name= "/method/endpoint/4" time="0.21390390396118" delta-time="0.0080368518829346">
+
+
+        </testcase>
+    </testsuite>
+</testsuites>

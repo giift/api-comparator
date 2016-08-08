@@ -1,22 +1,34 @@
 <?php
-require '../src/Config.php';
+require '../vendor/autoload.php';
 use PHPUnit\Framework\TestCase;
 
 class ConfigTest extends TestCase
 {
-    public function testConstruct()
+    protected $config;
+
+    public function setUp()
     {
-        $config_object = new \Giift\Compare\Config();
-        // Check type of object returned
-        $this->assertInstanceOf('\Giift\Compare\Config', $config_object);
+        $this->config = new \Giift\Compare\Config();
     }
 
+    /**
+     * Constructor should return \Giift\Compare\Config object
+     */
+    public function testConstruct()
+    {
+        // Check type of object returned
+        $this->assertInstanceOf(\Giift\Compare\Config::class, $this->config);
+
+        // return $config_object;
+    }
+
+    /**
+     * Test get_config()
+     */
     public function testGet()
     {
-        $config_object = new \Giift\Compare\Config();
-
         // Config should be the template
-        $actual = $config_object->get_config();
+        $actual = $this->config->get_config();
         $expected = array(
             'connect'=>array(
                 'old'=>array(
@@ -44,16 +56,15 @@ class ConfigTest extends TestCase
         );
 
         $this->assertEquals($expected, $actual);
-        // $this->assertArrayHasKey('connect', $actual);
-        // $this->assertArrayHasKey('old', $actual['connect']);
     }
 
+    /**
+     * Test set_connect()
+     */
     public function testSetConnect()
     {
-        $config_object = new \Giift\Compare\Config();
-
         // Set config
-        $config_object->set_connect(
+        $this->config->set_connect(
             'Bearer aSD4FDSMCskd43fsLKdfa2',
             'http://www.tshirt.com/api/',
             null,
@@ -61,7 +72,7 @@ class ConfigTest extends TestCase
         );
 
         // Get the config
-        $actual = $config_object->get_config();
+        $actual = $this->config->get_config();
         $expected = array(
             'connect' => array(
                 'old'=>array(
@@ -92,14 +103,16 @@ class ConfigTest extends TestCase
         $this->assertEquals($expected, $actual);
     }
 
+    /**
+     * Test set_display_opt()
+     */
     public function testSetDisplay()
     {
-        $config_object = new \Giift\Compare\Config();
-
         // Set display option
-        $config_object->set_display_opt(true);
+        $this->config->set_display_opt(true);
 
-        $actual = $config_object->get_config();
+        // Check config
+        $actual = $this->config->get_config();
         $expected = array(
             'connect'=>array(
                 'old'=>array(
@@ -125,12 +138,16 @@ class ConfigTest extends TestCase
             ),
             'display_all_results'=>true
         );
+
+        $this->assertEquals($expected, $actual);
     }
 
+    /**
+     * Test set_methods()
+     * @group test
+     */
     public function testSetMethods()
     {
-        $config_object = new \Giift\Compare\Config();
-
         // Add methods
         $methods = array(
             array(
@@ -141,23 +158,20 @@ class ConfigTest extends TestCase
                 )
             ),
             array(
-                'endpoint'=>'report/data/data',
+                'endpoint'=>'/returns',
                 'method'=>'POST',
                 'params'=>array(
-                    'report_data'=>array(
-                        'report_select'=>'agepie',
-                        'from'=>'2016-05-01',
-                        'to'=>'2016-06-01',
-                        'timezone'=>'UTC'
-                    )
+                    'size'=>'S',
+                    'account'=>'myaccount123'
                 ),
                 'content_types'=>array('application/json')
             )
         );
 
-        $config_object->set_methods($methods);
+        $this->config->set_methods($methods);
 
-        $actual = $config_object->get_config();
+        // Check config
+        $actual = $this->config->get_config();
         $expected = array(
             'connect'=>array(
                 'old'=>array(
@@ -178,15 +192,11 @@ class ConfigTest extends TestCase
                     )
                 ),
                 array(
-                    'endpoint'=>'report/data/data',
+                    'endpoint'=>'/returns',
                     'method'=>'POST',
                     'params'=>array(
-                        'report_data'=>array(
-                            'report_select'=>'agepie',
-                            'from'=>'2016-05-01',
-                            'to'=>'2016-06-01',
-                            'timezone'=>'UTC'
-                        )
+                        'size'=>'S',
+                        'account'=>'myaccount123'
                     ),
                     'content_types'=>array('application/json')
                 )
@@ -197,22 +207,38 @@ class ConfigTest extends TestCase
         $this->assertEquals($expected, $actual);
     }
 
+    /**
+     * add_method() should add on to existing methods
+     */
     public function testAddMethod()
     {
-        $config_object = new \Giift\Compare\Config();
-
-        $params = array(
-            'report_data'=>array(
-                'report_select'=>'countrypie',
-                'from'=>'2016-05-01',
-                'to'=>'2016-06-01',
-                'timezone'=>'UTC'
+        // Set methods
+        $methods = array(
+            array(
+                "endpoint"=> "/orders?userId=1964401a-a8b3-40c1-b86e-d8b9f75b5842&size=10&page=0",
+                "method"=> "GET",
+                "content_types"=> array(
+                    "application/json"
+                )
+            ),
+            array(
+                'endpoint'=>'/returns',
+                'method'=>'POST',
+                'params'=>array(
+                    'size'=>'S',
+                    'account'=>'myaccount123'
+                ),
+                'content_types'=>array('application/json')
             )
         );
 
-        $config_object->add_method('report/data/data', 'POST', array('application/json'), $params);
+        $this->config->set_methods($methods);
 
-        $actual = $config_object->get_config();
+        // Add a method
+        $this->config->add_method('/status', 'GET', array('application/json'));
+
+        // Check config
+        $actual = $this->config->get_config();
         $expected = array(
             'connect'=>array(
                 'old'=>array(
@@ -226,16 +252,24 @@ class ConfigTest extends TestCase
             ),
             'methods'=>array(
                 array(
-                    'endpoint'=>'report/data/data',
+                    "endpoint"=> "/orders?userId=1964401a-a8b3-40c1-b86e-d8b9f75b5842&size=10&page=0",
+                    "method"=> "GET",
+                    "content_types"=> array(
+                        "application/json"
+                    )
+                ),
+                array(
+                    'endpoint'=>'/returns',
                     'method'=>'POST',
                     'params'=>array(
-                        'report_data'=>array(
-                            'report_select'=>'countrypie',
-                            'from'=>'2016-05-01',
-                            'to'=>'2016-06-01',
-                            'timezone'=>'UTC'
-                        )
+                        'size'=>'S',
+                        'account'=>'myaccount123'
                     ),
+                    'content_types'=>array('application/json')
+                ),
+                array(
+                    'endpoint'=>'/status',
+                    'method'=>'GET',
                     'content_types'=>array('application/json')
                 )
             ),
@@ -243,5 +277,59 @@ class ConfigTest extends TestCase
         );
 
         $this->assertEquals($expected, $actual);
+    }
+
+    /**
+     * Test validate() method
+     */
+    public function testValidate()
+    {
+        // Set 'connect'
+        $this->config->set_connect(
+            'Bearer aSD4FDSMCskd43fsLKdfa2',
+            'http://www.tshirt.com/api/',
+            null,
+            'http://www.tshirt.com/api/1.0.development/'
+        );
+
+        // Set 'methods'
+        $methods = array(
+            array(
+                "endpoint"=> "/orders?userId=1964401a-a8b3-40c1-b86e-d8b9f75b5842&size=10&page=0",
+                "method"=> "GET",
+                "content_types"=> array(
+                    "application/json"
+                )
+            ),
+            array(
+                'endpoint'=>'/returns',
+                'method'=>'POST',
+                'params'=>array(
+                    'size'=>'S',
+                    'account'=>'myaccount123'
+                ),
+                'content_types'=>array('application/json')
+            )
+        );
+
+        $this->config->set_methods($methods);
+
+        // Set display_opt
+        $this->config->set_display_opt(true);
+
+        // Validate config
+        $this->assertTrue($this->config->validate());
+    }
+
+    /**
+     * Test create_from_file() method
+     */
+    public function testFileConfig()
+    {
+        $config = \Giift\Compare\Config::create_from_file('../examples/config.json');
+        $config_object = new \Giift\Compare\Config($config);
+
+        // Validate the config
+        $this->assertTrue($config_object->validate());
     }
 }

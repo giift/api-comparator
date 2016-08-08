@@ -199,7 +199,7 @@ class Raml
         foreach ($method->getQueryParameters() as $param)
         {
             $query_params[$param->getKey()] = $param->getExample();
-            if(empty($query_params))
+            if(is_null($param->getExample()))
             {
                 $this->missing_fields[$endpoint][] = 'query params: '.$param->getKey();
             }

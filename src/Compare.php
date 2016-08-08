@@ -332,7 +332,7 @@ class Compare
             $new_method['params'] = $params;
         }
 
-        $this->method[] = $new_method;
+        $this->methods[] = $new_method;
     }
 
     /**
@@ -406,7 +406,7 @@ class Compare
             $new_method->execute();
             $end_new = microtime(true);
 
-            // Execute the methods and compare results
+            // Compare results
             if($old_method and $new_method)
             {
                 $result = array(
@@ -415,10 +415,7 @@ class Compare
                 );
 
                 // Compare responses
-                if(!$this->compare($old_method, $new_method, $method['endpoint']))
-                {
-                    $result['differences'] = $this->get_differences();
-                }
+                $this->compare($old_method, $new_method, $method['endpoint']);
 
                 // Compare headers
                 $headers = $this->check_headers($old_method->_infos, $new_method->_infos);
@@ -439,11 +436,61 @@ class Compare
             $result['time'] = $time;
 
             $this->results[] = $result;
+
+            foreach ($this->results as $key => $value)
+            {
+                if(isset($value['differences']))
+                {
+                    $this->results[$key]['delta_time'] = $result['delta_time'];
+                    $this->results[$key]['time'] = $result['time'];
+
+                    if(isset($result['headers']))
+                    {
+                        $this->results[$key]['headers'] = $result['headers'];
+                    }
+
+                    if(isset($result['errors']))
+                    {
+                        $this->results[$key]['errors'] = $result['errors'];
+                    }
+                }
+            }
+
             $this->reset_differences();
             $this->index++;
         }
 
         return empty($this->differences);
+    }
+
+    /**
+     * Compares the response code and content type of both environments
+     * @param  array $old
+     * @param  array $new
+     * @return boolean
+     */
+    protected function check_headers(array $old, array $new)
+    {
+        $headers = array();
+
+        // Compare response code
+        if($old['http_code'] !== $new['http_code'])
+        {
+            $headers['response_code']= array(
+                'old'=>$old['http_code'],
+                'new'=>$new['http_code']
+            );
+        }
+        // Compare content type of response
+        if($old['content_type'] !== $new['content_type'])
+        {
+            $headers['content_type'] = array(
+                'old'=>$old['content_type'],
+                'new'=>$new['content_type']
+            );
+        }
+
+        return $headers;
     }
 
     /**
@@ -455,29 +502,39 @@ class Compare
      */
     public function compare(\Giift\Simplecurl\Curl $old, \Giift\Simplecurl\Curl $new, $method)
     {
-        // if($this->check_md5($old->_raw, $new->_raw))
-        // {
-        //     return true;
-        // }
-        // elseif($old->_infos['content_type'] === 'application/xml')
-        // {
-        //     $old_xml = new SimpleXMLElement($old);
-        //     $new_xml = new SimpleXMLElement($new);
+        if(!$this->check_md5($old->_raw, $new->_raw))
+        {
+            // Compare xml response
+            if($old->_infos['content_type'] === 'application/xml')
+            {
+                $old_xml = new \SimpleXMLElement($old->_response);
+                $new_xml = new \SimpleXMLElement($new->_response);
 
-        //     // TODO: figure out how to send method endpoint. since path is being used to get the element in new_xml
-        //     return ($this->check_xml($old_xml, $new_xml, array($method)));
-        // }
-        // elseif($old->_infos['content_type'] === 'application/json')
-        // {
-        //     return ($this->check_json($old->_response, $new->_response, array($method)));
-        // }
-        $old = file_get_contents('../temp/result_old.xml');
-        $old_xml = new \SimpleXMLElement($old);
+                if(!$this->check_xml($old_xml, $new_xml, array($method)))
+                {
+                    $this->results[] = array(
+                        'name' => $method,
+                        'differences' => $this->get_differences()
+                    );
 
-        $new = file_get_contents('../temp/result_new.xml');
-        $new_xml = new \SimpleXMLElement($new);
+                    return false;
+                }
+            }
+            // Compare json response
+            elseif($old->_infos['content_type'] === 'application/json')
+            {
+                if(!$this->check_json($old->_response, $new->_response, array($method)))
+                {
+                    $this->results[] = array(
+                        'name' => $method,
+                        'differences' => $this->get_differences()
+                    );
 
-        return ($this->check_xml($old_xml, $new_xml, array($method)));
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**
@@ -504,10 +561,10 @@ class Compare
      */
     protected function check_xml(\SimpleXMLElement $old, \SimpleXMLElement $new, array $path = array())
     {
-        // if($this->check_md5($old->asXML(), $new->asXML()))
-        // {
-        //     return true;
-        // }
+        if($this->check_md5($old->asXML(), $new->asXML()))
+        {
+            return true;
+        }
 
         $old_json = json_encode($old);
         $new_json = json_encode($new);
@@ -517,43 +574,6 @@ class Compare
             json_decode($new_json, true),
             $path
         );
-
-
-        // foreach($old->children() as $key=>$value)
-        // {
-        //     $path[] = $key;
-
-
-        //     // Check attributes
-        //     foreach($old->children()->attributes() as $k => $v)
-        //     {
-        //         if($v !== $new[$k])
-        //         {
-        //             // $path[] = $k;
-        //             $this->log_diff($v, $new[$k], $path);
-        //         }
-        //     }
-
-        //     // Compares the children
-        //     if(is_null($value) and !is_null($new->xpath(implode('/', $path))))
-        //     {
-        //         $this->log_diff($value, null, $path);
-        //     }
-        //     elseif($value->count() >= 1 and $new->count() == 0)
-        //     {
-        //         $this->log_diff($value, $new->xpath(implode('/', $path)), $path);
-        //     }
-        //     elseif($value->count() >= 1 and $new->count() >= 1)
-        //     {
-        //         $this->check_xml($value, $new->xpath(implode('/', $path)), $path);
-        //     }
-        //     elseif($value !== $new->xpath(implode('/', $path)))
-        //     {
-        //         $this->log_diff($value, $new->xpath(implode('/', $path)), $path);
-        //     }
-        // }
-
-        // return empty($this->differences);
     }
 
     /**
@@ -605,37 +625,6 @@ class Compare
     }
 
     /**
-     * Compares the response code and content type of both environments
-     * @param  array $old
-     * @param  array $new
-     * @return boolean
-     */
-    protected function check_headers(array $old, array $new)
-    {
-        $headers = array();
-
-        // Compare response code
-        if($old['http_code'] !== $new['http_code'])
-        {
-            $headers['response_code']= array(
-                'old'=>$old['http_code'],
-                'new'=>$new['http_code']
-            );
-        }
-        // Compare content type of response
-        if($old['content_type'] !== $new['content_type'])
-        {
-            $headers['content_type'] = array(
-                'old'=>$old['content_type'],
-                'new'=>$new['content_type']
-            );
-        }
-
-        return $headers;
-    }
-
-
-    /**
      * Puts output in specified file
      * @param string $output_file
      * @param string $format
@@ -673,7 +662,7 @@ class Compare
         switch($format)
         {
             case 'json':
-                $output = json_encode($this->get_results(),JSON_PRETTY_PRINT);
+                $output = json_encode($this->get_results(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
                 break;
             case 'csv':
                 $output = $this->to_csv();
@@ -696,21 +685,54 @@ class Compare
     public function to_csv()
     {
         $line = array();
+        $name = null;
+        $delta_time = null;
 
         foreach($this->get_results() as $result)
         {
+            if(isset($result['name']))
+            {
+                $name = $result['name'];
+            }
+            if(isset($result['delta_time']))
+            {
+                $delta_time = $result['delta_time'];
+            }
+
             if($this->display_opt)
             {
-                $line[] = '"'.$result['name'].'"';
+                $line[] = '"'.$name.'",,,,"'.$delta_time.'"';
             }
+
             if(array_key_exists('differences', $result))
             {
                 foreach ($result['differences'] as $key => $value)
                 {
-                    $line[] = '"'.$result['name'].'","'.$key.'","'.json_encode($value['old']).'","'.json_encode($value['new']).'","'.$result['delta_time'].'"';
+                    $line[] =
+                        '"'.
+                        $name.
+                        '","'.
+                        $key.
+                        '","'.
+                        str_replace(
+                            '"',
+                            '',
+                            json_encode($value['old'], JSON_UNESCAPED_SLASHES)
+                        ).
+                        '","'.
+                        str_replace(
+                            '"',
+                            '',
+                            json_encode($value['new'], JSON_UNESCAPED_SLASHES)
+                        ).
+                        '","'.
+                        $delta_time.
+                        '"'
+                    ;
                 }
             }
         }
+
         $data = implode("\n", $line);
 
         $csv = new \League\Plates\Engine(__DIR__.'/../templates');
@@ -749,15 +771,32 @@ class Compare
                 array_key_exists('errors', $result)
             )
             {
+                $name = null;
+                $delta_time = null;
+                $time = null;
+
+                if(isset($result['name']))
+                {
+                    $name = $result['name'];
+                }
+                if(isset($result['delta_time']))
+                {
+                    $delta_time = $result['delta_time'];
+                }
+                if(isset($result['time']))
+                {
+                    $time = $result['time'];
+                }
+
                 $data = array(
-                    'name' => urlencode($result['name']),
-                    'time' => $result['time'],
-                    'delta_time' => $result['delta_time'],
+                    'name' => urlencode($name),
+                    'time' => $time,
+                    'delta_time' => $delta_time,
                     'fail' => false,
                     'error' => false
                 );
 
-                $info['duration'] += $result['time'];
+                $info['duration'] += $time;
 
                 // Set error messages
                 if(array_key_exists('errors', $result))
@@ -771,7 +810,9 @@ class Compare
                 if(array_key_exists('differences', $result))
                 {
                     $data['fail'] = true;
-                    $data['differences'] = json_encode($result['differences'], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+                    // $data['differences'] = json_encode($result['differences'], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_HEX_AMP);
+                    $differences = str_replace('&', '\\u0026', json_encode($result['differences'], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+                    $data['differences'] = $differences;
 
                     $info['failures']++;
                 }
@@ -787,7 +828,7 @@ class Compare
                     $info['testcases'] .= $header_test->render(
                         'headers',
                         array(
-                            'name'=>urlencode($result['name']),
+                            'name'=>urlencode($name),
                             'headers'=>json_encode($result['headers'], JSON_PRETTY_PRINT)
                         )
                     );
