@@ -36,12 +36,8 @@
 	</testsuites>
 	<filter>
         <whitelist>
-    	    <directory suffix=".php">../</directory>
+    	    <directory suffix=".php">../src</directory>
             <exclude>
-                <directory suffix=".php">../temp</directory>
-                <directory suffix=".php">../vendor</directory>
-                <directory suffix=".php">../build</directory>
-                <directory suffix=".php">../templates</directory>
                 <directory suffix=".php">../src/Commands</directory>
             </exclude>
         </whitelist>
