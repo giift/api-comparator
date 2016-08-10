@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<phpunit codecoverage="true" colors="true" stopOnFailure="false" bootstrap="/bootstrap_phpunit.php">
+	<formatter type="clover" usefile="false"/>
+	<php>
+		<server name="doc_root" value="../../"/>
+		<server name="src_path" value="/src"/>
+		<server name="vendor_path" value="/vendor"/>
+		<server name="FUEL_ENV" value="uat"/>
+	</php>
+
+	<logging>
+		<log type="coverage-html" target="../../build/coverage"/>
+		<log type="coverage-clover" target="../../build/coverage/clover.xml"/>
+		<log type="coverage-crap4j" target="../../build/coverage/crap4j.xml"/>
+		<log type="junit" target="../../build/logs/junit.xml" logIncompleteSkipped="false"/>
+	</logging>
+	<listeners>
+		<listener class="JohnKary\PHPUnit\Listener\SpeedTrapListener">
+			<arguments>
+				<array>
+					<element key="slowThreshold">
+						<integer>1000</integer>
+					</element>
+					<element key="reportLength">
+						<integer>60</integer>
+					</element>
+				</array>
+			</arguments>
+		</listener>
+	</listeners>
+
+	<testsuites>
+		<testsuite name="src">
+		</testsuite>
+	</testsuites>
+	<filter>
+        <whitelist>
+    	    <directory suffix=".php">../</directory>
+            <exclude>
+                <directory suffix=".php">../src</directory>
+                <directory suffix=".php">../vendor</directory>
+
+                <directory suffix=".php">./logs</directory>
+                <directory suffix=".php">./tests</directory>
+            </exclude>
+        </whitelist>
+    </filter>
+</phpunit>
