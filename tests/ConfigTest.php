@@ -234,7 +234,7 @@ class ConfigTest extends PHPUnit_Framework_TestCase
         $this->config->set_methods($methods);
 
         // Add a method
-        $this->config->add_method('/status', 'GET', array('application/json'));
+        $this->config->add_method('/status', 'GET', array('application/json'), array('id'=>'23452345'));
 
         // Check config
         $actual = $this->config->get_config();
@@ -269,6 +269,9 @@ class ConfigTest extends PHPUnit_Framework_TestCase
                 array(
                     'endpoint'=>'/status',
                     'method'=>'GET',
+                    'params'=>array(
+                        'id'=>'23452345'
+                    ),
                     'content_types'=>array('application/json')
                 )
             ),
@@ -276,6 +279,27 @@ class ConfigTest extends PHPUnit_Framework_TestCase
         );
 
         $this->assertEquals($expected, $actual);
+    }
+
+    /**
+     * Test validate() method
+     * @expectedException \Exception
+     */
+    public function testValidateFail()
+    {
+        // Set 'connect'
+        $this->config->set_connect(
+            'Bearer aSD4FDSMCskd43fsLKdfa2',
+            'http://www.tshirt.com/api/',
+            null,
+            'http://www.tshirt.com/api/1.0.development/'
+        );
+
+        // Set display_opt
+        $this->config->set_display_opt(true);
+
+        // Validate config should through an exception
+        $this->assertTrue($this->config->validate());
     }
 
     /**
@@ -318,6 +342,17 @@ class ConfigTest extends PHPUnit_Framework_TestCase
 
         // Validate config
         $this->assertTrue($this->config->validate());
+
+    }
+
+    /**
+     * Test create_from_file()
+     * @expectedException \Exception
+     */
+    public function testFileConfigFail()
+    {
+        //Should through an exception
+        $config = \Giift\Compare\Config::create_from_file(__DIR__.'/temp/file.json');
     }
 
     /**

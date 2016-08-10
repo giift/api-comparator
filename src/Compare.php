@@ -635,20 +635,13 @@ class Compare
     {
         $output = $this->format($format);
 
-        try
+        if(is_dir($output_file))
         {
-            if(is_dir($output_file))
-            {
-                throw new \Exception("Cannot write to a directory");
-            }
-            if(!file_put_contents($output_file, $output))
-            {
-                throw new \Exception("Could not write to file");
-            }
+            throw new \Exception("Cannot write to a directory");
         }
-        catch(\Exception $e)
+        if(!file_put_contents($output_file, $output))
         {
-            echo $e->getMessage();
+            throw new \Exception("Could not write to file");
         }
     }
 

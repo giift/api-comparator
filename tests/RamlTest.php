@@ -98,4 +98,13 @@ class RamlTest extends PHPUnit_Framework_TestCase
         $bad_raml->create_config();
         $this->assertNotEmpty($bad_raml->get_missing_fields());
     }
+
+    public function testMissingField()
+    {
+        $this->assertEmpty($this->raml->get_missing_field('orders'));
+
+        $bad_raml = new \Giift\Compare\Parser\Raml(__DIR__.'/../examples/bad_api.raml');
+        $bad_raml->create_config();
+        $this->assertNotEmpty($bad_raml->get_missing_field('orders'));
+    }
 }
