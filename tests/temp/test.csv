@@ -1,8 +1,0 @@
-"Method", "Path", "Old Value", "New Value", "Delta Time"
-"/test/csv/",,,,""
-"/test/csv/","/test/csv//connect/old/token","Bearer SKsfdGSdsfa8sdJDEMNLKd734","Bearer ytDMktD38aJENcsf873",""
-"/test/csv/","/test/csv//connect/old/token/base_uri","http://www.tshirt.com/api/","http://www.tshirt.com",""
-"/test/csv/","/test/csv//connect/old/new/token","Bearer SKsfdGSdsfa8sdJDEMNLKd734","Bearer ytDMkhSsrtD38aJENcsf873",""
-"/test/csv/","/test/csv//connect/old/new/token/base_uri","http://www.tshirt.com/api/1.0.development/","http://www.tshirt.com/api/v1",""
-"/test/csv/","/test/csv//connect/methods","[{endpoint:/orders?userId=1964401a-a8b3-40c1-b86e-d8b9f75b5842&size=10&page=0,method:GET,content_types:[application/json]}]","null",""
-"/test/csv/","/test/csv//connect/methods/display_all_results","true","null",""
