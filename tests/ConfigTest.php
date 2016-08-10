@@ -295,11 +295,10 @@ class ConfigTest extends PHPUnit_Framework_TestCase
             'http://www.tshirt.com/api/1.0.development/'
         );
 
-        // Set display_opt
-        $this->config->set_display_opt(true);
+        $this->config->set_methods(array());
 
         // Validate config should through an exception
-        $this->assertTrue($this->config->validate());
+        $this->config->validate();
     }
 
     /**
