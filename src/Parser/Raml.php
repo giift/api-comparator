@@ -410,9 +410,9 @@ class Raml
                 // Add method for each enum
                 if(!empty($params->getEnum()))
                 {
-                    foreach ($params->getEnum() as $key => $value)
+                    foreach ($params->getEnum() as $enum)
                     {
-                        $new_endpoint = $this->set_endpoint($endpoint, $value, $query_params);
+                        $new_endpoint = $this->set_endpoint($endpoint, $enum, $query_params);
 
                         $this->config_object->add_method(
                             $new_endpoint,

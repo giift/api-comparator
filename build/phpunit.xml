@@ -6,7 +6,6 @@
 		<server name="doc_root" value="../"/>
 		<server name="src_path" value="/src"/>
 		<server name="vendor_path" value="/vendor"/>
-		<server name="FUEL_ENV" value="uat"/>
 	</php>
 
 	<logging>
@@ -39,7 +38,7 @@
         <whitelist>
     	    <directory suffix=".php">../</directory>
             <exclude>
-                <directory suffix=".php">src</directory>
+                <directory suffix=".php">temp</directory>
                 <directory suffix=".php">vendor</directory>
             </exclude>
         </whitelist>

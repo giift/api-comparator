@@ -1,8 +1,7 @@
 <?php
 require __DIR__.'/../vendor/autoload.php';
-use PHPUnit\Framework\TestCase;
 
-class RamlTest extends TestCase
+class RamlTest extends PHPUnit_Framework_TestCase
 {
     protected $raml;
 

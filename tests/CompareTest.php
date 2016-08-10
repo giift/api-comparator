@@ -1,8 +1,7 @@
 <?php
 require __DIR__.'/../vendor/autoload.php';
-use PHPUnit\Framework\TestCase;
 
-class CompareTest extends TestCase
+class CompareTest extends PHPUnit_Framework_TestCase
 {
     protected $compare;
 
