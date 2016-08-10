@@ -477,21 +477,21 @@ class CompareTest extends PHPUnit_Framework_TestCase
 
         // // Test json format
         $json = $this->compare->format();
-        $this->compare->to_file('temp/results.json', 'json');
-        $this->assertFileExists('temp/results.json');
-        $this->assertJsonStringEqualsJsonFile('temp/results.json', $json);
+        $this->compare->to_file(__DIR__.'/temp/results.json', 'json');
+        $this->assertFileExists(__DIR__.'/temp/results.json');
+        $this->assertJsonStringEqualsJsonFile(__DIR__.'/temp/results.json', $json);
 
         // // Test csv format
         $csv = $this->compare->format('csv');
-        $this->compare->to_file('temp/results.csv', 'csv');
-        $this->assertFileExists('temp/results.csv');
-        $this->assertStringEqualsFile('temp/results.csv', $csv);
+        $this->compare->to_file(__DIR__.'/temp/results.csv', 'csv');
+        $this->assertFileExists(__DIR__.'/temp/results.csv');
+        $this->assertStringEqualsFile(__DIR__.'/temp/results.csv', $csv);
 
         // Test xml/junit format
         $xml = $this->compare->format('xml');
-        $this->compare->to_file('temp/results.xml', 'xml');
-        $this->assertFileExists('temp/results.xml');
-        $file = file_get_contents('temp/results.xml');
+        $this->compare->to_file(__DIR__.'/temp/results.xml', 'xml');
+        $this->assertFileExists(__DIR__.'/temp/results.xml');
+        $file = file_get_contents(__DIR__.'/temp/results.xml');
         $this->assertEquals($xml, $file);
     }
 }
