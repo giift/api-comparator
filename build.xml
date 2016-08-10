@@ -40,6 +40,27 @@
 		<delete dir="${basedir}/vendor" />
 	</target>
 
+	<target name="composer" description="Update dependencies with Composer">
+        <tstamp>
+            <format property="thirty.days.ago" pattern="MM/dd/yyyy hh:mm aa" offset="-30" unit="day"/>
+        </tstamp>
+        <delete>
+            <fileset dir="${basedir}">
+                <include name="composer.phar" />
+                <date datetime="${thirty.days.ago}" when="before"/>
+            </fileset>
+        </delete>
+
+        <get src="https://getcomposer.org/composer.phar" dest="${basedir}/composer.phar" skipexisting="true"/>
+
+        <exec executable="php">
+            <arg value="composer.phar"/>
+            <arg value="update"/>
+            <arg value="--prefer-dist"/>
+            <arg value="--no-progress"/>
+        </exec>
+    </target>
+
     <target name="prepare" unless="prepare.done" description="Prepare for build">
 		<mkdir dir="${basedir}/build/cache"/>
 		<mkdir dir="${basedir}/build/coverage"/>
@@ -148,7 +169,7 @@
 		</exec>
 	</target>
 
-	<target name="phpunit" depends="prepare" description="Run unit tests with PHPUnit">
+	<target name="phpunit" depends="prepare,composer" description="Run unit tests with PHPUnit">
 		<exec executable="${toolsdir}phpunit" failonerror="false">
 			<arg value="--configuration"/>
 			<arg path="${basedir}/build/phpunit.xml"/>
