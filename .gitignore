@@ -3,7 +3,6 @@
 
 /vendor
 /temp
-/tests/temp
 
 /build/cache
 /build/coverage

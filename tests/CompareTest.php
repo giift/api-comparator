@@ -397,7 +397,7 @@ class CompareTest extends PHPUnit_Framework_TestCase
         $this->assertFalse($this->compare->compare($old, $new, '/test/csv/'));
 
         // Check if all columns are there
-        $this->compare->to_file(__DIR__.'/tests/temp/test.csv', 'csv');
+        $this->compare->to_file(__DIR__.'/temp/test.csv', 'csv');
         $csv = file('temp/test.csv');
 
         foreach ($csv as $line)
