@@ -126,7 +126,7 @@ class CompareTest extends PHPUnit_Framework_TestCase
      */
     public function testAddMethod()
     {
-        $this->compare->add_method('/status', 'GET', array('application/json'));
+        $this->compare->add_method('/status', 'GET', array('application/json'), array('id'=>'23452345'));
         $methods = $this->compare->get_methods();
 
         $expected = array(
@@ -151,6 +151,9 @@ class CompareTest extends PHPUnit_Framework_TestCase
             array(
                 'endpoint'=>'/status',
                 'method'=>'GET',
+                'params'=>array(
+                        'id'=>'23452345'
+                ),
                 'content_types'=>array(
                     'application/json'
                 )
@@ -434,6 +437,8 @@ class CompareTest extends PHPUnit_Framework_TestCase
 
         $this->assertFalse($this->compare->compare($old, $new, '/test/format/'));
 
+        $this->assertNull($this->compare->format('php'));
+
         $outputs = array(
             $this->compare->format(),
             $this->compare->format('csv'),
@@ -446,6 +451,18 @@ class CompareTest extends PHPUnit_Framework_TestCase
             $this->assertInternalType('string', $output);
         }
     }
+
+    /**
+     * Should throw an exception
+     * @expectedException \Exception
+     */
+    public function testToFileFail()
+    {
+        $this->compare->to_file(__DIR__.'/../examples', 'json');
+
+        $this->compare->to_file(__DIR__.'/temp/result.json', 'json');
+    }
+
 
     /**
      * Formatted results should be same as data in file
@@ -475,13 +492,13 @@ class CompareTest extends PHPUnit_Framework_TestCase
 
         $this->assertFalse($this->compare->compare($old, $new, '/test/file/'));
 
-        // // Test json format
+        // Test json format
         $json = $this->compare->format();
         $this->compare->to_file(__DIR__.'/results.json', 'json');
         $this->assertFileExists(__DIR__.'/results.json');
         $this->assertJsonStringEqualsJsonFile(__DIR__.'/results.json', $json);
 
-        // // Test csv format
+        // Test csv format
         $csv = $this->compare->format('csv');
         $this->compare->to_file(__DIR__.'/results.csv', 'csv');
         $this->assertFileExists(__DIR__.'/results.csv');
