@@ -94,7 +94,7 @@
 		</exec>
 	</target>
 
-	<target name="phploc-ci" depends="prepare" description="Measure project size using PHPLOC and log result in CSV and XML format. Intended for usage within a continuous integration environment.">
+	<target name="phploc-ci" depends="prepare,composer" description="Measure project size using PHPLOC and log result in CSV and XML format. Intended for usage within a continuous integration environment.">
 		<exec executable="${toolsdir}phploc">
 			<arg value="--count-tests" />
 			<arg value="--log-csv" />
@@ -169,7 +169,7 @@
 		</exec>
 	</target>
 
-	<target name="phpunit" depends="prepare,composer" description="Run unit tests with PHPUnit">
+	<target name="phpunit" depends="prepare" description="Run unit tests with PHPUnit">
 		<exec executable="${toolsdir}phpunit" failonerror="false">
 			<arg value="--configuration"/>
 			<arg path="${basedir}/build/phpunit.xml"/>
