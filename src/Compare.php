@@ -824,7 +824,7 @@ class Compare
                 // Template for differences in headers
                 if(array_key_exists('headers', $result))
                 {
-                    $header_test = new \League\Plates\Engine('../templates/junit');
+                    $header_test = new \League\Plates\Engine(__DIR__.'/../templates/junit');
                     $info['testcases'] .= $header_test->render(
                         'headers',
                         array(

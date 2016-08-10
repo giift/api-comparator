@@ -1,5 +1,5 @@
 <?php
-require '../vendor/autoload.php';
+require __DIR__.'/../vendor/autoload.php';
 use PHPUnit\Framework\TestCase;
 
 class ConfigTest extends TestCase
@@ -326,7 +326,7 @@ class ConfigTest extends TestCase
      */
     public function testFileConfig()
     {
-        $config = \Giift\Compare\Config::create_from_file('../examples/config.json');
+        $config = \Giift\Compare\Config::create_from_file(__DIR__.'/../examples/config.json');
         $config_object = new \Giift\Compare\Config($config);
 
         // Validate the config

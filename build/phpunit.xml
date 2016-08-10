@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<phpunit codecoverage="true" colors="true" stopOnFailure="false" bootstrap="/bootstrap_phpunit.php">
+<phpunit codecoverage="true" colors="true" stopOnFailure="false"> <!-- bootstrap="bootstrap_phpunit.php"> -->
 	<formatter type="clover" usefile="false"/>
 	<php>
-		<server name="doc_root" value="../../"/>
+		<server name="doc_root" value="../"/>
 		<server name="src_path" value="/src"/>
 		<server name="vendor_path" value="/vendor"/>
 		<server name="FUEL_ENV" value="uat"/>
 	</php>
 
 	<logging>
-		<log type="coverage-html" target="../../build/coverage"/>
-		<log type="coverage-clover" target="../../build/coverage/clover.xml"/>
-		<log type="coverage-crap4j" target="../../build/coverage/crap4j.xml"/>
-		<log type="junit" target="../../build/logs/junit.xml" logIncompleteSkipped="false"/>
+		<log type="coverage-html" target="coverage"/>
+		<log type="coverage-clover" target="coverage/clover.xml"/>
+		<log type="coverage-crap4j" target="coverage/crap4j.xml"/>
+		<log type="junit" target="logs/junit.xml" logIncompleteSkipped="false"/>
 	</logging>
 	<listeners>
 		<listener class="JohnKary\PHPUnit\Listener\SpeedTrapListener">
@@ -32,17 +32,15 @@
 
 	<testsuites>
 		<testsuite name="src">
+			<directory suffix=".php">../tests</directory>
 		</testsuite>
 	</testsuites>
 	<filter>
         <whitelist>
     	    <directory suffix=".php">../</directory>
             <exclude>
-                <directory suffix=".php">../src</directory>
-                <directory suffix=".php">../vendor</directory>
-
-                <directory suffix=".php">./logs</directory>
-                <directory suffix=".php">./tests</directory>
+                <directory suffix=".php">src</directory>
+                <directory suffix=".php">vendor</directory>
             </exclude>
         </whitelist>
     </filter>

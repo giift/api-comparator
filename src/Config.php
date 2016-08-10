@@ -319,9 +319,9 @@ class Config
     {
         if(!is_readable($filepath))
         {
-            throw new Exception("File not readable");
-
+            throw new \Exception("File not readable");
         }
+
         $config = file_get_contents($filepath);
 
         return json_decode($config, true);

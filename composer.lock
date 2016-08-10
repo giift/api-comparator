@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "eeb0078755abb25506c1a1ac463e571f",
-    "content-hash": "57f7b7fb309a230422521f7f71582659",
+    "hash": "b1efee84a17bd144dd3cc95215a9e689",
+    "content-hash": "39bc3282d04faa65e6d56dadf82301df",
     "packages": [
         {
             "name": "d2g/reactor",
