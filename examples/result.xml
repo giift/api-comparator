@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<testsuites duration= "0">
-    <testsuite name="comparison test" failures= "0" tests= "5" skipped= "0" errors= "0">
+<testsuites >
+    <testsuite name="comparison test" duration= "1.37291765213013" failures= "0" tests= "5" skipped= "0" errors= "0">
         <testcase name= "/method/endpoint/1" time="0.45951390266418" delta-time="-0.1479709148407">
 
 
