@@ -4,8 +4,6 @@
 /temp
 /tests/temp
 
-/build.xml
-
 /build/cache
 /build/coverage
 /build/docs
