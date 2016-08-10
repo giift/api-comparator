@@ -397,7 +397,7 @@ class CompareTest extends PHPUnit_Framework_TestCase
         $this->assertFalse($this->compare->compare($old, $new, '/test/csv/'));
 
         // Check if all columns are there
-        $this->compare->to_file(__DIR__.'/temp/test.csv', 'csv');
+        $this->compare->to_file(__DIR__.'/test.csv', 'csv');
         $csv = file('temp/test.csv');
 
         foreach ($csv as $line)
@@ -477,21 +477,21 @@ class CompareTest extends PHPUnit_Framework_TestCase
 
         // // Test json format
         $json = $this->compare->format();
-        $this->compare->to_file(__DIR__.'/temp/results.json', 'json');
-        $this->assertFileExists(__DIR__.'/temp/results.json');
+        $this->compare->to_file(__DIR__.'/results.json', 'json');
+        $this->assertFileExists(__DIR__.'/results.json');
         $this->assertJsonStringEqualsJsonFile(__DIR__.'/temp/results.json', $json);
 
         // // Test csv format
         $csv = $this->compare->format('csv');
-        $this->compare->to_file(__DIR__.'/temp/results.csv', 'csv');
-        $this->assertFileExists(__DIR__.'/temp/results.csv');
-        $this->assertStringEqualsFile(__DIR__.'/temp/results.csv', $csv);
+        $this->compare->to_file(__DIR__.'/results.csv', 'csv');
+        $this->assertFileExists(__DIR__.'/results.csv');
+        $this->assertStringEqualsFile(__DIR__.'/results.csv', $csv);
 
         // Test xml/junit format
         $xml = $this->compare->format('xml');
-        $this->compare->to_file(__DIR__.'/temp/results.xml', 'xml');
-        $this->assertFileExists(__DIR__.'/temp/results.xml');
-        $file = file_get_contents(__DIR__.'/temp/results.xml');
+        $this->compare->to_file(__DIR__.'/results.xml', 'xml');
+        $this->assertFileExists(__DIR__.'/results.xml');
+        $file = file_get_contents(__DIR__.'/results.xml');
         $this->assertEquals($xml, $file);
     }
 }
