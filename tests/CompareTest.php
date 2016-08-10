@@ -359,9 +359,9 @@ class CompareTest extends PHPUnit_Framework_TestCase
         $this->assertFalse($this->compare->compare($old, $new, '/test/junit/'));
 
         $xml = new DOMDocument;
-        $this->compare->to_file('temp/test.xml', 'xml');
-        $this->assertFileExists('temp/test.xml');
-        $xml->load('temp/test.xml');
+        $this->compare->to_file('test.xml', 'xml');
+        $this->assertFileExists('test.xml');
+        $xml->load('test.xml');
         $this->assertTrue($xml->schemaValidate(__DIR__.'/../schema/Junit.xsd'));
     }
 
@@ -398,7 +398,7 @@ class CompareTest extends PHPUnit_Framework_TestCase
 
         // Check if all columns are there
         $this->compare->to_file(__DIR__.'/test.csv', 'csv');
-        $csv = file('temp/test.csv');
+        $csv = file(__DIR__.'/test.csv');
 
         foreach ($csv as $line)
         {
@@ -479,7 +479,7 @@ class CompareTest extends PHPUnit_Framework_TestCase
         $json = $this->compare->format();
         $this->compare->to_file(__DIR__.'/results.json', 'json');
         $this->assertFileExists(__DIR__.'/results.json');
-        $this->assertJsonStringEqualsJsonFile(__DIR__.'/temp/results.json', $json);
+        $this->assertJsonStringEqualsJsonFile(__DIR__.'/results.json', $json);
 
         // // Test csv format
         $csv = $this->compare->format('csv');
