@@ -358,6 +358,7 @@ class Compare
      */
     public function run($reset = true)
     {
+        $return = true;
         if($reset)
         {
             $this->reset_index();
@@ -406,61 +407,45 @@ class Compare
             $new_method->execute();
             $end_new = microtime(true);
 
+            $result = array();
             // Compare results
             if($old_method and $new_method)
             {
-                $result = array(
-                    'name'=>$method['endpoint'],
-                    'delta_time'=>($end_new - $start_new) - ($start_new - $start_old)
-                );
+                $this->results[$this->index]['delta_time'] = ($end_new - $start_new) - ($start_new - $start_old);
 
                 // Compare responses
-                $this->compare($old_method, $new_method, $method['endpoint']);
+                if($this->compare($old_method, $new_method, $method['endpoint']))
+                {
+                    $this->results[$this->index]['name'] = $method['endpoint'];
+                }
+                else
+                {
+                    $return = false;
+                }
 
                 // Compare headers
                 $headers = $this->check_headers($old_method->_infos, $new_method->_infos);
                 if(!empty($headers))
                 {
-                    $result['headers'] = $headers;
+                    $this->results[$this->index]['headers'] = $headers;
                 }
             }
             else
             {
-                $result['errors'] = array(
+                $this->results[$this->index]['errors'] = array(
                     'old' => $old_method->get_error(true),
                     'new' => $new_method->get_error(true)
                 );
             }
 
             $time = microtime(true) - $start_time;
-            $result['time'] = $time;
-
-            $this->results[] = $result;
-
-            foreach ($this->results as $key => $value)
-            {
-                if(isset($value['differences']))
-                {
-                    $this->results[$key]['delta_time'] = $result['delta_time'];
-                    $this->results[$key]['time'] = $result['time'];
-
-                    if(isset($result['headers']))
-                    {
-                        $this->results[$key]['headers'] = $result['headers'];
-                    }
-
-                    if(isset($result['errors']))
-                    {
-                        $this->results[$key]['errors'] = $result['errors'];
-                    }
-                }
-            }
+            $this->results[$this->index]['time'] = $time;
 
             $this->reset_differences();
             $this->index++;
         }
 
-        return empty($this->differences);
+        return $return;
     }
 
     /**
@@ -512,7 +497,7 @@ class Compare
 
                 if(!$this->check_xml($old_xml, $new_xml, array($method)))
                 {
-                    $this->results[] = array(
+                    $this->results[$this->index] = array(
                         'name' => $method,
                         'differences' => $this->get_differences()
                     );
@@ -525,7 +510,7 @@ class Compare
             {
                 if(!$this->check_json($old->_response, $new->_response, array($method)))
                 {
-                    $this->results[] = array(
+                    $this->results[$this->index] = array(
                         'name' => $method,
                         'differences' => $this->get_differences()
                     );
