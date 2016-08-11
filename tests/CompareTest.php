@@ -237,10 +237,7 @@ class CompareTest extends PHPUnit_Framework_TestCase
                 'token'=>'Bearer ytDMkhSsrtD38aJENcsf873',
                 'base_uri'=>'http://www.tshirt.com/api/v0'
             ),
-            'new'=>array(
-                'token'=>'Bearer ytDMkhSsrtD38aJENcsf873',
-                'base_uri'=>'http://www.tshirt.com/api/v1'
-            )
+            'new'=>'http://www.tshirt.com/api/v1'
         );
 
         $this->assertFalse($this->compare->compare($old, $new, '/test/json/diff/'));
@@ -359,6 +356,9 @@ class CompareTest extends PHPUnit_Framework_TestCase
             )
         );
 
+        $this->assertFalse($this->compare->compare($old, $new, '/test/junit/'));
+
+        $this->compare->set_display_opt(false);
         $this->assertFalse($this->compare->compare($old, $new, '/test/junit/'));
 
         $xml = new DOMDocument;
