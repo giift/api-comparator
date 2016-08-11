@@ -19,21 +19,22 @@ types:
       productCode: string
       description: string
 
-/orders:
+/orders{account}:
+  account:
+    description: account id
+    enum: [ myaccount123, newaccount987 ]
   displayName: Orders
   description: Orders collection resource used to create new orders.
   get:
     description: lists all orders of a specific user
     queryParameters:
-      userId:
-        type: string
-        description: use to query all orders of a user
       size:
         description: the amount of elements of each result page
         type: integer
       page:
         description: the page number
         required: false
+        example: 10
     responses:
       200:
         body:
@@ -46,11 +47,16 @@ types:
       id:
         type: string
         description: order id
+    body:
+      application/xml:
+        formParameters:
+          account:
+            required: true
     responses:
       200:
         body:
           application/json
-/{id}:
+/returns{id}:
   uriParameters:
     id:
       example: 0932457
@@ -69,5 +75,20 @@ types:
     responses:
       200:
         body:
+/available:
+  description: checks availability of item
+  post:
+    body:
+      multipart/form-data:
+        formParameters:
+          itemId:
+            example: sdf9870
+          size:
+            description: size of item
+          color:
+            description: color of item
+            required: true
+    responses:
+      200:
+        body:
           application/xml
-
