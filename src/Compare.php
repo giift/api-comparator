@@ -407,7 +407,6 @@ class Compare
             $new_method->execute();
             $end_new = microtime(true);
 
-            $result = array();
             // Compare results
             if($old_method and $new_method)
             {
