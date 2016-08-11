@@ -37,3 +37,37 @@ types:
     responses:
       200:
         body:
+/status:
+  displayName: Status
+  description: Status of the order.
+  get:
+    description: Gives the status of the order
+    queryParameters:
+      id:
+        type: string
+        description: order id
+    responses:
+      200:
+        body:
+          application/json
+/{id}:
+  uriParameters:
+    id:
+      example: 0932457
+  displayName: Returns
+  description: Order to return
+  post:
+    body:
+      application/x-www-form-urlencoded:
+        formParameters:
+          size:
+            description: size of the item
+            enum: [ S, M, L ]
+          account:
+            description: account number
+            required: true
+    responses:
+      200:
+        body:
+          application/xml
+
