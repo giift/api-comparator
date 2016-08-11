@@ -17,8 +17,6 @@ class ConfigTest extends PHPUnit_Framework_TestCase
     {
         // Check type of object returned
         $this->assertInstanceOf(\Giift\Compare\Config::class, $this->config);
-
-        // return $config_object;
     }
 
     /**
@@ -287,18 +285,22 @@ class ConfigTest extends PHPUnit_Framework_TestCase
      */
     public function testValidateFail()
     {
-        // Set 'connect'
-        $this->config->set_connect(
-            'Bearer aSD4FDSMCskd43fsLKdfa2',
-            'http://www.tshirt.com/api/',
-            null,
-            'http://www.tshirt.com/api/1.0.development/'
+        $config = array(
+            'connect'=>array(
+                'old'=>array(
+                    'token'=>'Bearer aSD4FDSMCskd43fsLKdfa2',
+                    'base_uri'=>'http://www.tshirt.com/api/'
+                ),
+                'new'=>array()
+            ),
+            'methods'=>array(),
+            'display_all_results'=>''
         );
 
-        $this->config->set_methods(array());
+        $config_object = new \Giift\Compare\Config($config);
 
         // Validate config should through an exception
-        $this->config->validate();
+        $config_object->validate();
     }
 
     /**

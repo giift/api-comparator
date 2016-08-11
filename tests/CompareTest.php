@@ -344,16 +344,7 @@ class CompareTest extends PHPUnit_Framework_TestCase
 
         $old->_response = json_decode($old->_raw, true);
         $new->_response = array(
-            'connect'=>array(
-                'old'=>array(
-                    'token'=>'Bearer ytDMkhSsrtD38aJENcsf873',
-                    'base_uri'=>'http://www.tshirt.com/v0'
-                ),
-                'new'=>array(
-                    'token'=>'Bearer ytDMkhSsrtD38aJENcsf873',
-                    'base_uri'=>'http://www.tshirt.com'
-                )
-            )
+            'connect'=>''
         );
 
         $this->assertFalse($this->compare->compare($old, $new, '/test/junit/'));
@@ -454,6 +445,7 @@ class CompareTest extends PHPUnit_Framework_TestCase
 
     /**
      * Should throw an exception
+     * @group test
      * @expectedException \Exception
      */
     public function testToFileFail()
