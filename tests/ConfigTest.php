@@ -281,7 +281,7 @@ class ConfigTest extends PHPUnit_Framework_TestCase
 
     /**
      * Test validate() method
-     * @expectedException \Exception
+     * @expectedException \Raml\Exception\InvalidSchemaException
      */
     public function testValidateFail()
     {
