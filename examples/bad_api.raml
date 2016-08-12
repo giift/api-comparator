@@ -8,16 +8,6 @@ protocols: [ HTTPS ]
 securitySchemes:
   - oauth_2_0:
 securedBy: [ oauth_2_0 ]
-types:
-  Shirts:
-    type: array
-    items: shirt
-  shirt:
-    type: object
-    properties:
-      size: number
-      productCode: string
-      description: string
 
 /orders{account}:
   uriParameters:
@@ -50,7 +40,6 @@ types:
     queryParameters:
       id:
         type: string
-        description: order id
     body:
       application/xml:
         formParameters:
@@ -65,7 +54,6 @@ types:
     id:
       example: 0932457
   displayName: Returns
-  description: Order to return
   post:
     body:
       application/x-www-form-urlencoded:
@@ -75,7 +63,6 @@ types:
             enum: [ S, M, L ]
           account:
             description: account number
-            required: true
     responses:
       200:
         body:
@@ -90,9 +77,7 @@ types:
           size:
             description: size of item
           color:
-            description: color of item
             required: true
     responses:
       200:
         body:
-          application/xml
