@@ -66,7 +66,7 @@ $config = array(
 // Returns the configuration as an array
 $config = \Giift\Compare\Config::('path/to/config/file');
 ```
-A json schema of the configuration can be found [here]().
+A json schema of the configuration can be found [here](https://github.com/giift/api-comparator/blob/master/schema/Config.json).
 
 ### Generate from RAML
 The [RAML](http://raml.org/) file contains documentation of the API, which includes the different methods, their parameters, and response description.
