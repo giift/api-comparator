@@ -410,8 +410,6 @@ class Compare
             // Compare results
             if($old_method and $new_method)
             {
-                $this->results[$this->index]['delta_time'] = ($end_new - $start_new) - ($start_new - $start_old);
-
                 // Compare responses
                 if($this->compare($old_method, $new_method, $method['endpoint']))
                 {
@@ -428,6 +426,9 @@ class Compare
                 {
                     $this->results[$this->index]['headers'] = $headers;
                 }
+
+                // Set delta time
+                $this->results[$this->index]['delta_time'] = ($end_new - $start_new) - ($start_new - $start_old);
             }
             else
             {
@@ -787,7 +788,7 @@ class Compare
                 if(array_key_exists('differences', $result))
                 {
                     $data['fail'] = true;
-                    // $data['differences'] = json_encode($result['differences'], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_HEX_AMP);
+
                     $differences = str_replace('&', '\\u0026', json_encode($result['differences'], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
                     $data['differences'] = $differences;
 
