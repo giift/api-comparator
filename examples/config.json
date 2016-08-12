@@ -16,39 +16,6 @@
             "content_types": [
                 "application/json"
             ]
-        },
-        {
-            "endpoint": "/status?id=29845754",
-            "method": "POST",
-            "params": {
-                "account": "myAccount123"
-            },
-            "content_types": [
-                "application/json"
-            ]
-        },
-        {
-            "endpoint": "/returns/0932457",
-            "method": "POST",
-            "params": {
-                "size":"M",
-                "account": "myAccount123"
-            },
-            "content_types": [
-                "application/json"
-            ]
-        },
-        {
-            "endpoint": "/available",
-            "method": "POST",
-            "params": {
-                "itemId": "sdf9870",
-                "size":"M",
-                "color": "myAccount123"
-            },
-            "content_types": [
-                "application/xml"
-            ]
         }
     ],
     "display_all_results": true
